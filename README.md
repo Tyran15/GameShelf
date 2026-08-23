@@ -262,12 +262,12 @@ Exibe todas as informações de um jogo e permite editá-lo ou excluí-lo.
 
 ### V1 — CRUD
 
-- [ ] Configurar projeto
-- [ ] Configurar PostgreSQL
-- [ ] Configurar Prisma
-- [ ] Criar schema do banco
-- [ ] Criar migrations
-- [ ] Criar seed
+- [x] Configurar projeto
+- [x] Configurar PostgreSQL
+- [x] Configurar Prisma
+- [x] Criar schema do banco
+- [x] Criar migrations
+- [x] Criar seed
 - [ ] Implementar CRUD de jogos
 - [ ] Implementar CRUD de plataformas
 - [ ] Implementar CRUD de gêneros
