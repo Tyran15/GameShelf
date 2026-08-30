@@ -11,3 +11,21 @@ export async function getAllGames() {
     },
   });
 }
+
+export async function createGame(data:{
+  title: string;
+  description?: string;
+  releaseDate?: Date | string;
+  status?: "WISHLIST" | "PLAYING" | "COMPLETED" | "PAUSED" | "DROPPED";
+  rating?: number;
+  platformId: number;
+  genreId: number;
+}) {
+  return prisma.game.create({
+    data,
+    include: {
+      platform: true,
+      genre: true,
+    },
+  });
+}
