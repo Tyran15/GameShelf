@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import gameRoutes from "./routes/game.routes"
 
 const app = express();
 
@@ -12,5 +13,7 @@ app.get("/api/health", (req, res) => {
     message: "GameShelf API is running!",
   });
 });
+
+app.use("/api/games", gameRoutes);
 
 export default app;
