@@ -12,7 +12,7 @@ export async function getAllGames() {
   });
 }
 
-export async function createGame(data:{
+export async function createGame(data: {
   title: string;
   description?: string;
   releaseDate?: Date | string;
@@ -28,4 +28,28 @@ export async function createGame(data:{
       genre: true,
     },
   });
+}
+
+export async function getGameById(id: number) {
+
+  const games = await prisma.game.findMany({
+    where: { id },
+    take: 1,
+  });
+  const game = games[0] || null;
+
+  if (!game) {
+    return null;
+  }
+
+  const [platform, genre] = await Promise.all([
+    prisma.platform.findUnique({ where: { id: game.platformId } }),
+    prisma.genre.findUnique({ where: { id: game.genreId } }),
+  ]);
+
+  return {
+    ...game,
+    platform,
+    genre,
+  };
 }
