@@ -28,9 +28,9 @@ O projeto também serve como um estudo prático de desenvolvimento **Full Stack*
 
 ### 🎮 Jogos
 
-- [ ] Cadastrar jogo
-- [ ] Listar jogos
-- [ ] Visualizar detalhes de um jogo
+- [x] Cadastrar jogo
+- [x] Listar jogos
+- [x] Visualizar detalhes de um jogo
 - [ ] Editar jogo
 - [ ] Excluir jogo
 - [ ] Pesquisar jogos
