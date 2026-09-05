@@ -13,13 +13,16 @@ export async function getAllGames() {
 }
 
 export async function createGame(data: {
+  data: {
   title: string;
   description?: string;
   releaseDate?: Date | string;
-  status?: "WISHLIST" | "PLAYING" | "COMPLETED" | "PAUSED" | "DROPPED";
+  status?: "...";
   rating?: number;
   platformId: number;
   genreId: number;
+  coverUrl?: string;
+}
 }) {
   return prisma.game.create({
     data,

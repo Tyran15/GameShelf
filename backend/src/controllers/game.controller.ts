@@ -47,26 +47,34 @@ export async function createGameController(req: Request, res: Response) {
   }
 }
 
-export async function getGameByIdController(req: Request, res: Response) { 
+export async function getGameByIdController(
+  req: Request,
+  res: Response
+) {
   try {
     const id = Number(req.params.id);
-    console.log("Convertido para Number:", id);
-    console.log("isNaN:", isNaN(id));
 
     if (isNaN(id)) {
-      return res.status(400).json({ message: "ID inválido, deve ser um número."});
-    };
+      return res.status(400).json({
+        message: "ID inválido, deve ser um número."
+      });
+    }
 
     const game = await getGameById(id);
 
-    if(!game) {
-      return res.status(404).json({ message: "Jogo não encontrado." })
+    if (!game) {
+      return res.status(404).json({
+        message: "Jogo não encontrado."
+      });
     }
 
     res.json(game);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Erro ao buscar jogo" });
+
+    res.status(500).json({
+      message: "Erro ao buscar jogo"
+    });
   }
 }
 
