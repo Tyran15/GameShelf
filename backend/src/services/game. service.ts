@@ -53,3 +53,24 @@ export async function getGameById(id: number) {
     genre,
   };
 }
+
+export async function updateGame(id: number, data: any) {
+  return prisma.game.update({
+    where: {
+      id,
+    },
+    data,
+    include: {
+      platform: true,
+      genre: true,
+    },
+  });
+}
+
+export async function deleteGame(id: number) {
+  return prisma.game.delete({
+    where: {
+      id,
+    },
+  });
+}

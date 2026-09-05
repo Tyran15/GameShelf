@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { getAllGames, createGame, getGameById } from "../services/gameService";
+import { getAllGames, createGame, getGameById, updateGame, deleteGame } from "../services/game. service";
+import { Param } from "@prisma/client/runtime/client";
 
 export async function getGames(req: Request, res: Response) {
   try {
@@ -46,12 +47,7 @@ export async function createGameController(req: Request, res: Response) {
   }
 }
 
-export async function getGameByIdController(req: Request, res: Response) {
-  console.log("=== GET BY ID ===");
-  console.log("req.params:", req.params);
-  console.log("req.params.id:", req.params.id);
-  console.log("typeof req.params.id:", typeof req.params.id);
-  
+export async function getGameByIdController(req: Request, res: Response) { 
   try {
     const id = Number(req.params.id);
     console.log("Convertido para Number:", id);
@@ -71,5 +67,35 @@ export async function getGameByIdController(req: Request, res: Response) {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Erro ao buscar jogo" });
+  }
+}
+
+export async function updateGameController(req: Request, res: Response) {
+  try {
+    const id = Number(req.params.id);
+    const game = await updateGame(id, req.body);
+
+    res.json(game);
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      message: "Erro ao atualizar jogo."
+    })
+  }
+}
+
+export async function deleteGameController(req: Request, res: Response) {
+  try {
+    const id = Number(req.params.id);
+    const game = await deleteGame(id);
+
+    res.json(game);
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      message: "Erro ao deletar jogo."
+    })
   }
 }
