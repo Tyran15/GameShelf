@@ -31,8 +31,8 @@ O projeto também serve como um estudo prático de desenvolvimento **Full Stack*
 - [x] Cadastrar jogo
 - [x] Listar jogos
 - [x] Visualizar detalhes de um jogo
-- [ ] Editar jogo
-- [ ] Excluir jogo
+- [x] Editar jogo
+- [x] Excluir jogo
 - [ ] Pesquisar jogos
 - [ ] Filtrar por status
 - [ ] Filtrar por plataforma
@@ -268,7 +268,7 @@ Exibe todas as informações de um jogo e permite editá-lo ou excluí-lo.
 - [x] Criar schema do banco
 - [x] Criar migrations
 - [x] Criar seed
-- [ ] Implementar CRUD de jogos
+- [x] Implementar CRUD de jogos
 - [ ] Implementar CRUD de plataformas
 - [ ] Implementar CRUD de gêneros
 - [ ] Implementar filtros
