@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
+import { Prisma } from "@prisma/client";
 import { getAllGames, createGame, getGameById, updateGame, deleteGame } from "../services/game. service";
-import { Param } from "@prisma/client/runtime/client";
+import { createGameSchema } from "../schemas/game.schema";
 
 export async function getGames(req: Request, res: Response) {
   try {
@@ -16,32 +17,45 @@ export async function getGames(req: Request, res: Response) {
 
 export async function createGameController(req: Request, res: Response) {
   try {
-    const {
-      title,
-      description,
-      coverUrl,
-      releaseDate,
-      status,
-      rating,
-      platformId,
-      genreId,
-    } = req.body;
+    const result = createGameSchema.safeParse(req.body);
 
-    const game = await createGame({
-      title,
-      description,
-      coverUrl,
-      releaseDate: releaseDate ? new Date(releaseDate) : undefined,
-      status,
-      rating,
-      platformId: Number(platformId),
-      genreId: Number(genreId),
-    });
+    if (!result.success) {
+      return res.status(400).json({
+        message: "Dados inválidos.",
+        errors: result.error.flatten().fieldErrors,
+      });
+    }
 
-    res.status(201).json(game);
+    const game = await createGame(result.data);
+
+    return res.status(201).json(game);
+
   } catch (error) {
     console.error(error);
-    res.status(500).json({
+
+    if (error instanceof Error) {
+      if (error.message === "PLATFORM_NOT_FOUND") {
+        return res.status(404).json({
+          message: "Plataforma não encontrada.",
+        });
+      }
+
+      if (error.message === "GENRE_NOT_FOUND") {
+        return res.status(404).json({
+          message: "Gênero não encontrado.",
+        });
+      }
+    }
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2003") {
+        return res.status(404).json({
+          message: "Plataforma ou gênero não encontrado.",
+        });
+      }
+    }
+
+    return res.status(500).json({
       message: "Erro ao criar jogo",
     });
   }

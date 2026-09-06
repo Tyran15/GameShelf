@@ -13,17 +13,35 @@ export async function getAllGames() {
 }
 
 export async function createGame(data: {
-  data: {
   title: string;
   description?: string;
+  coverUrl?: string;
   releaseDate?: Date | string;
-  status?: "...";
+  status?: "WISHLIST" | "PLAYING" | "COMPLETED" | "PAUSED" | "DROPPED";
   rating?: number;
   platformId: number;
   genreId: number;
-  coverUrl?: string;
-}
 }) {
+  const platform = await prisma.platform.findUnique({
+    where: {
+      id: data.platformId,
+    },
+  });
+
+  if (!platform) {
+    throw new Error("PLATFORM_NOT_FOUND");
+  }
+
+  const genre = await prisma.genre.findUnique({
+    where: {
+      id: data.genreId,
+    },
+  });
+
+  if (!genre) {
+    throw new Error("GENRE_NOT_FOUND");
+  }
+
   return prisma.game.create({
     data,
     include: {

@@ -25,7 +25,6 @@ export const createGameSchema = z.object({
     .max(10)
     .optional(),
 
-  platformId: z.number(),
-
-  genreId: z.number(),
+  platformId: z.coerce.number(),
+  genreId: z.coerce.number(),
 });
