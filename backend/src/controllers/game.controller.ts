@@ -136,14 +136,23 @@ export async function updateGameController(req: Request, res: Response) {
 export async function deleteGameController(req: Request, res: Response) {
   try {
     const id = Number(req.params.id);
-    const game = await deleteGame(id);
 
-    res.json(game);
+    if (isNaN(id)) {
+      return res.status(400).json({
+        message: "ID inválido, deve ser um número.",
+      });
+    }
+
+    await deleteGame(id);
+
+    return res.status(204).send();
   } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      message: "Erro ao deletar jogo."
-    })
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2025") {
+        return res.status(404).json({
+          message: "Jogo não encontrado.",
+        });
+      }
+    }
   }
 }
