@@ -28,3 +28,5 @@ export const createGameSchema = z.object({
   platformId: z.coerce.number(),
   genreId: z.coerce.number(),
 });
+
+export const updateGameSchema = createGameSchema.partial();

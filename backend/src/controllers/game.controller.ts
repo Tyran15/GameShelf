@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { Prisma } from "@prisma/client";
 import { getAllGames, createGame, getGameById, updateGame, deleteGame } from "../services/game. service";
-import { createGameSchema } from "../schemas/game.schema";
+import { createGameSchema, updateGameSchema } from "../schemas/game.schema";
 
 export async function getGames(req: Request, res: Response) {
   try {
@@ -95,15 +95,41 @@ export async function getGameByIdController(
 export async function updateGameController(req: Request, res: Response) {
   try {
     const id = Number(req.params.id);
-    const game = await updateGame(id, req.body);
 
-    res.json(game);
+    if (isNaN(id)) {
+      return res.status(400).json({
+        message: "ID inválido, deve ser um número.",
+      });
+    }
+
+    const result = updateGameSchema.safeParse(req.body);
+
+    if (!result.success) {
+      return res.status(400).json({
+        message: "Dados inválidos.",
+        errors: result.error.flatten().fieldErrors,
+      });
+    }
+
+    const game = await updateGame(id, result.data);
+
+    return res.json(game);
   } catch (error) {
     console.error(error);
 
-    res.status(500).json({
-      message: "Erro ao atualizar jogo."
-    })
+    if (error instanceof Error) {
+      if (error.message === "PLATFORM_NOT_FOUND") {
+        return res.status(404).json({
+          message: "Plataforma não encontrada.",
+        });
+      }
+
+      if (error.message === "GENRE_NOT_FOUND") {
+        return res.status(404).json({
+          message: "Gênero não encontrado.",
+        });
+      }
+    }
   }
 }
 
