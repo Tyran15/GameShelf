@@ -33,10 +33,10 @@ O projeto também serve como um estudo prático de desenvolvimento **Full Stack*
 - [x] Visualizar detalhes de um jogo
 - [x] Editar jogo
 - [x] Excluir jogo
-- [ ] Pesquisar jogos
-- [ ] Filtrar por status
-- [ ] Filtrar por plataforma
-- [ ] Filtrar por gênero
+- [x] Pesquisar jogos
+- [x] Filtrar por status
+- [x] Filtrar por plataforma
+- [x] Filtrar por gênero
 
 ### 🕹️ Plataformas
 
@@ -272,10 +272,10 @@ Exibe todas as informações de um jogo e permite editá-lo ou excluí-lo.
 - [x] Implementar CRUD de plataformas
 - [x] Implementar CRUD de gêneros
 - [x] Implementar filtros
-- [ ] Criar frontend
-- [ ] Conectar frontend com API
-- [ ] Implementar tratamento de erros
-- [ ] Tornar interface responsiva
+- [x] Criar frontend
+- [x] Conectar frontend com API
+- [x] Implementar tratamento de erros
+- [x] Tornar interface responsiva
 
 ### V2 — Expansão
 
