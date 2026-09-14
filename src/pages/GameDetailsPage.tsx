@@ -186,7 +186,7 @@ function InfoBlock({
 }: {
   label: string;
   value: string;
-  icon?: React.ReactNode;
+  icon?: React.ReactNode | undefined;
 }) {
   return (
     <div className="rounded-lg border border-border bg-surface p-4">

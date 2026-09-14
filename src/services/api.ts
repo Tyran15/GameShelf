@@ -8,7 +8,7 @@ export const API_BASE_URL = (
 
 export class ApiError extends Error {
   status: number;
-  errors?: Record<string, string[]>;
+  errors?: Record<string, string[]> | undefined;
 
   constructor(
     message: string,
@@ -47,11 +47,12 @@ export async function request<T>(
   let response: Response;
 
   try {
-    response = await fetch(buildUrl(path, query), {
-      method,
-      headers: body ? { "Content-Type": "application/json" } : undefined,
-      body: body ? JSON.stringify(body) : undefined,
-    });
+    const init: RequestInit = { method };
+    if (body !== undefined) {
+      init.headers = { "Content-Type": "application/json" };
+      init.body = JSON.stringify(body);
+    }
+    response = await fetch(buildUrl(path, query), init);
   } catch {
     throw new ApiError(
       "Não foi possível conectar à API. Verifique se o servidor está rodando.",
@@ -69,7 +70,7 @@ export async function request<T>(
   if (!response.ok) {
     const payload = (data ?? {}) as {
       message?: string;
-      errors?: Record<string, string[]>;
+      errors?: Record<string, string[]> | undefined;
     };
     throw new ApiError(
       payload.message ?? defaultMessage(response.status),

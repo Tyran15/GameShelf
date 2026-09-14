@@ -7,7 +7,7 @@ export function ErrorState({
   onRetry,
 }: {
   error: unknown;
-  onRetry?: () => void;
+  onRetry?: (() => void) | undefined;
 }) {
   const message =
     error instanceof ApiError

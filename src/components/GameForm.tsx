@@ -53,10 +53,10 @@ export function GameForm({
   onSubmit,
   onCancel,
 }: {
-  game?: Game;
+  game?: Game | undefined;
   submitLabel: string;
   isSubmitting: boolean;
-  fieldErrors?: Record<string, string[]>;
+  fieldErrors?: Record<string, string[]> | undefined;
   onSubmit: (data: GameInput) => void;
   onCancel: () => void;
 }) {
@@ -255,7 +255,7 @@ export function GameForm({
   );
 }
 
-function FieldError({ message }: { message?: string }) {
+function FieldError({ message }: { message?: string | undefined }) {
   if (!message) return null;
   return <p className="text-xs font-medium text-destructive">{message}</p>;
 }
