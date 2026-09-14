@@ -55,27 +55,7 @@ export async function createGame(data: CreateGameInput) {
 }
 
 export async function getGameById(id: number) {
-
-  const games = await prisma.game.findMany({
-    where: { id },
-    take: 1,
-  });
-  const game = games[0] || null;
-
-  if (!game) {
-    return null;
-  }
-
-  const [platform, genre] = await Promise.all([
-    prisma.platform.findUnique({ where: { id: game.platformId } }),
-    prisma.genre.findUnique({ where: { id: game.genreId } }),
-  ]);
-
-  return {
-    ...game,
-    platform,
-    genre,
-  };
+  return prisma.game.findUnique({ where: { id }, include: { platform: true, genre: true } });
 }
 
 export interface UpdateGameInput {

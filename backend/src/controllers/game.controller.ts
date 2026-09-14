@@ -130,6 +130,18 @@ export async function updateGameController(req: Request, res: Response) {
         });
       }
     }
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2003") {
+        return res.status(404).json({
+          message: "Plataforma ou gênero não encontrado.",
+        });
+      }
+    }
+
+    return res.status(500).json({
+      message: "Erro ao atualizar jogo",
+    });
   }
 }
 
@@ -147,12 +159,32 @@ export async function deleteGameController(req: Request, res: Response) {
 
     return res.status(204).send();
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2025") {
+    console.error(error);
+
+    if (error instanceof Error) {
+      if (error.message === "PLATFORM_NOT_FOUND") {
         return res.status(404).json({
-          message: "Jogo não encontrado.",
+          message: "Plataforma não encontrada.",
+        });
+      }
+
+      if (error.message === "GENRE_NOT_FOUND") {
+        return res.status(404).json({
+          message: "Gênero não encontrado.",
         });
       }
     }
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2003") {
+        return res.status(404).json({
+          message: "Plataforma ou gênero não encontrado.",
+        });
+      }
+    }
+
+    return res.status(500).json({
+      message: "Erro ao deletar jogo",
+    });
   }
 }
