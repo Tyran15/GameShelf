@@ -269,9 +269,9 @@ Exibe todas as informações de um jogo e permite editá-lo ou excluí-lo.
 - [x] Criar migrations
 - [x] Criar seed
 - [x] Implementar CRUD de jogos
-- [ ] Implementar CRUD de plataformas
-- [ ] Implementar CRUD de gêneros
-- [ ] Implementar filtros
+- [x] Implementar CRUD de plataformas
+- [x] Implementar CRUD de gêneros
+- [x] Implementar filtros
 - [ ] Criar frontend
 - [ ] Conectar frontend com API
 - [ ] Implementar tratamento de erros
