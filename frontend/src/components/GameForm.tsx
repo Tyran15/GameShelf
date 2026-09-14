@@ -96,7 +96,7 @@ export function GameForm({
     };
     if (form.description.trim()) payload.description = form.description.trim();
     if (form.coverUrl.trim()) payload.coverUrl = form.coverUrl.trim();
-    if (form.releaseDate) payload.releaseDate = form.releaseDate;
+    if (form.releaseDate) payload.releaseDate = `${form.releaseDate}T00:00:00.000Z`;    
     if (form.rating !== "") payload.rating = Number(form.rating);
 
     onSubmit(payload);
