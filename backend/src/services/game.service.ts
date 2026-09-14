@@ -1,4 +1,16 @@
+import { GameStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma";
+
+export interface CreateGameInput {
+  title: string;
+  description?: string;
+  coverUrl?: string;
+  releaseDate?: Date | string;
+  status?: GameStatus;
+  rating?: number;
+  platformId: number;
+  genreId: number;
+}
 
 export async function getAllGames() {
   return prisma.game.findMany({
@@ -12,16 +24,7 @@ export async function getAllGames() {
   });
 }
 
-export async function createGame(data: {
-  title: string;
-  description?: string;
-  coverUrl?: string;
-  releaseDate?: Date | string;
-  status?: "WISHLIST" | "PLAYING" | "COMPLETED" | "PAUSED" | "DROPPED";
-  rating?: number;
-  platformId: number;
-  genreId: number;
-}) {
+export async function createGame(data: CreateGameInput) {
   const platform = await prisma.platform.findUnique({
     where: {
       id: data.platformId,
@@ -75,7 +78,18 @@ export async function getGameById(id: number) {
   };
 }
 
-export async function updateGame(id: number, data: any) {
+export interface UpdateGameInput {
+  title?: string;
+  description?: string;
+  coverUrl?: string;
+  releaseDate?: Date | string;
+  status?: GameStatus;
+  rating?: number;
+  platformId?: number;
+  genreId?: number;
+}
+
+export async function updateGame(id: number, data: UpdateGameInput) {
   const platform = data.platformId
     ? await prisma.platform.findUnique({
         where: { id: data.platformId },

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { Prisma } from "@prisma/client";
-import { getAllGames, createGame, getGameById, updateGame, deleteGame } from "../services/game. service";
+import { getAllGames, createGame, getGameById, updateGame, deleteGame } from "../services/game.service";
 import { createGameSchema, updateGameSchema } from "../schemas/game.schema";
 
 export async function getGames(req: Request, res: Response) {
