@@ -1,11 +1,20 @@
 import { Request, Response } from "express";
 import { Prisma } from "@prisma/client";
 import { getAllGames, createGame, getGameById, updateGame, deleteGame } from "../services/game.service";
-import { createGameSchema, updateGameSchema } from "../schemas/game.schema";
+import { createGameSchema, gameQuerySchema, updateGameSchema } from "../schemas/game.schema";
 
 export async function getGames(req: Request, res: Response) {
+  const parsed = gameQuerySchema.safeParse(req.query);
+
+  if (!parsed.success) {
+    return res.status(400).json({
+      message: "Filtros inválidos.",
+      errors: parsed.error.flatten().fieldErrors,
+    });
+  }
+
   try {
-    const games = await getAllGames();
+    const games = await getAllGames(parsed.data);
     res.json(games);
   } catch (error) {
     console.error(error);

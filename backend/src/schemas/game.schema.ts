@@ -30,3 +30,15 @@ export const createGameSchema = z.object({
 });
 
 export const updateGameSchema = createGameSchema.partial();
+
+export const gameQuerySchema = z.object({
+  status: z
+    .enum(["WISHLIST", "PLAYING", "COMPLETED", "PAUSED", "DROPPED"])
+    .optional(),
+
+  platformId: z.coerce.number().int().positive().optional(),
+
+  genreId: z.coerce.number().int().positive().optional(),
+
+  search: z.string().trim().min(1).optional(),
+});

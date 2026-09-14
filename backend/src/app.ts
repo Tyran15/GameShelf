@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import gameRoutes from "./routes/game.routes";
+import platformRoutes from "./routes/platform.routes";
 
 const app = express();
 
@@ -12,5 +13,6 @@ app.get("/api/health", (req, res) => {
 });
 
 app.use("/api/games", gameRoutes);
+app.use("/api/platforms", platformRoutes);
 
 export default app;

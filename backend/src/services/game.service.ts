@@ -1,6 +1,13 @@
 import { GameStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 
+type GameFilters = {
+  status?: "WISHLIST" | "PLAYING" | "COMPLETED" | "PAUSED" | "DROPPED";
+  platformId?: number;
+  genreId?: number;
+  search?: string;
+};
+
 export interface CreateGameInput {
   title: string;
   description?: string;
@@ -12,8 +19,18 @@ export interface CreateGameInput {
   genreId: number;
 }
 
-export async function getAllGames() {
+export async function getAllGames(filters: GameFilters = {}) {
+  const { status, platformId, genreId, search } = filters;
+
   return prisma.game.findMany({
+    where: {
+      status,
+      platformId,
+      genreId,
+      title: search
+        ? { contains: search, mode: "insensitive" }
+        : undefined,
+    },
     include: {
       platform: true,
       genre: true,
