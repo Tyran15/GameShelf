@@ -36,7 +36,7 @@ export async function getAllGames(filters: GameFilters = {}) {
       genre: true,
     },
     orderBy: {
-      createdAt: "desc",
+      updatedAt: "desc",   // 👈 única mudança real
     },
   });
 }
@@ -89,8 +89,8 @@ export interface UpdateGameInput {
 export async function updateGame(id: number, data: UpdateGameInput) {
   const platform = data.platformId
     ? await prisma.platform.findUnique({
-        where: { id: data.platformId },
-      })
+      where: { id: data.platformId },
+    })
     : true;
 
   if (!platform) {
@@ -99,8 +99,8 @@ export async function updateGame(id: number, data: UpdateGameInput) {
 
   const genre = data.genreId
     ? await prisma.genre.findUnique({
-        where: { id: data.genreId },
-      })
+      where: { id: data.genreId },
+    })
     : true;
 
   if (!genre) {
@@ -123,12 +123,4 @@ export async function deleteGame(id: number) {
       id,
     },
   });
-}
-
-export async function listGames(filters: GameFilters) {
-  return prisma.game.findMany({
-    where: { /* filtros — não mexa aqui */ },
-    include: { platform: true, genre: true },
-    orderBy: { updatedAt: 'desc' },   // 👈 mais recente primeiro
-  })
 }
