@@ -10,7 +10,6 @@ import { GameFiltersBar, type FiltersValue } from "@/components/GameFiltersBar";
 import { useGames } from "@/hooks/useGames";
 import { useGenres } from "@/hooks/useGenres";
 import { usePlatforms } from "@/hooks/usePlatforms";
-import { LibraryStats } from "@/components/LibraryStats";
 
 const EMPTY_FILTERS: FiltersValue = {
   search: "",
@@ -30,7 +29,6 @@ export function LibraryPage() {
 
   const platforms = usePlatforms();
   const genres = useGenres();
-  const libraryStats = useGames({});
   const games = useGames({
     search: debouncedSearch,
     status: filters.status,
@@ -62,10 +60,6 @@ export function LibraryPage() {
           </Link>
         </Button>
       </header>
-
-      {libraryStats.data && libraryStats.data.length > 0 ? (
-        <LibraryStats games={libraryStats.data} />
-      ) : null}
 
       <GameFiltersBar
         value={filters}
