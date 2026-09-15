@@ -124,3 +124,11 @@ export async function deleteGame(id: number) {
     },
   });
 }
+
+export async function listGames(filters: GameFilters) {
+  return prisma.game.findMany({
+    where: { /* filtros — não mexa aqui */ },
+    include: { platform: true, genre: true },
+    orderBy: { updatedAt: 'desc' },   // 👈 mais recente primeiro
+  })
+}
