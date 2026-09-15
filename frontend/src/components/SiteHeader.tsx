@@ -8,9 +8,13 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-3">
         <Link to="/" className="flex items-center gap-2">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Library className="size-4" />
-          </span>
+          <div className="flex items-center">
+            <img
+              src="../../public/logo.ico"
+              alt="GameShelf Logo"
+              className="h-10 w-auto"
+            />
+          </div>
           <span className="font-display text-lg font-bold tracking-tight">
             Game<span className="text-primary">Shelf</span>
           </span>
