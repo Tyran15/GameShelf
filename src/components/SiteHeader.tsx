@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Library, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function SiteHeader() {
   return (
@@ -21,12 +22,15 @@ export function SiteHeader() {
               Biblioteca
             </Link>
           </Button>
-          <Button asChild size="sm">
-            <Link to="/games/new">
-              <Plus className="size-4" />
-              <span className="hidden sm:inline">Novo jogo</span>
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button asChild size="sm">
+              <Link to="/games/new">
+                <Plus className="size-4" />
+                <span className="hidden sm:inline">Novo jogo</span>
+              </Link>
+            </Button>
+          </div>
         </nav>
       </div>
     </header>
