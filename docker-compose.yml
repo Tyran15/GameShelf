@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: gameshelf-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gameshelf
+      POSTGRES_PASSWORD: gameshelf
+      POSTGRES_DB: gameshelf
+    ports:
+      - "5432:5432"
+    volumes:
+      - gameshelf_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  gameshelf_postgres_data:
