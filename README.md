@@ -4,53 +4,69 @@
 
 ## 📌 Sobre o projeto
 
-O **GameShelf** é uma aplicação web desenvolvida para gerenciar uma biblioteca pessoal de jogos.
+O **GameShelf** é uma aplicação web full stack desenvolvida para gerenciamento de uma biblioteca pessoal de jogos.
 
-A proposta é permitir que o usuário cadastre seus jogos, organize-os por plataforma, gênero e status, além de acompanhar quais jogos já foram concluídos, estão sendo jogados ou ainda estão na lista de desejos.
+A aplicação permite cadastrar, organizar, pesquisar e filtrar jogos por **plataforma, gênero e status**, além de acompanhar informações como avaliação, data de lançamento e descrição.
 
-O projeto também serve como um estudo prático de desenvolvimento **Full Stack**, utilizando uma arquitetura baseada em API REST.
-
----
-
-## 🎯 Objetivos
-
-- Praticar desenvolvimento Full Stack
-- Construir uma API REST
-- Trabalhar com operações CRUD
-- Utilizar banco de dados relacional
-- Aplicar TypeScript no frontend e backend
-- Praticar organização e arquitetura de projetos
-- Criar um projeto completo para portfólio
+O projeto foi desenvolvido como um projeto de estudo e portfólio, com foco em **desenvolvimento Full Stack, APIs REST, integração entre frontend e backend, banco de dados relacional e boas práticas de organização de código**.
 
 ---
 
-## 🚀 Funcionalidades da V1
+## ✨ Funcionalidades
 
 ### 🎮 Jogos
 
-- [x] Cadastrar jogo
-- [x] Listar jogos
-- [x] Visualizar detalhes de um jogo
-- [x] Editar jogo
-- [x] Excluir jogo
-- [x] Pesquisar jogos
-- [x] Filtrar por status
-- [x] Filtrar por plataforma
-- [x] Filtrar por gênero
+* [x] Cadastrar jogo
+* [x] Listar jogos
+* [x] Visualizar detalhes
+* [x] Editar jogo
+* [x] Excluir jogo
+* [x] Pesquisar jogos
+* [x] Filtrar por status
+* [x] Filtrar por plataforma
+* [x] Filtrar por gênero
+* [x] Combinar filtros
+* [x] Avaliar jogos
+* [x] Definir status de progresso
+* [x] Registrar data de lançamento
 
 ### 🕹️ Plataformas
 
-- [ ] Cadastrar plataforma
-- [ ] Listar plataformas
-- [ ] Editar plataforma
-- [ ] Excluir plataforma
+* [x] Cadastrar plataforma
+* [x] Listar plataformas
+* [x] Editar plataforma
+* [x] Excluir plataforma
 
 ### 🏷️ Gêneros
 
-- [ ] Cadastrar gênero
-- [ ] Listar gêneros
-- [ ] Editar gênero
-- [ ] Excluir gênero
+* [x] Cadastrar gênero
+* [x] Listar gêneros
+* [x] Editar gênero
+* [x] Excluir gênero
+
+### 🎨 Interface
+
+* [x] Design responsivo
+* [x] Tema claro
+* [x] Tema escuro
+* [x] Interface para desktop, tablet e mobile
+* [x] Dashboard/home com informações da biblioteca
+
+---
+
+## 🖼️ Screenshots
+
+> Screenshots da aplicação serão adicionados aqui.
+
+<!--
+Exemplo:
+
+![Home](docs/screenshots/home.png)
+
+![Biblioteca](docs/screenshots/library.png)
+
+![Detalhes do jogo](docs/screenshots/game-details.png)
+-->
 
 ---
 
@@ -58,51 +74,58 @@ O projeto também serve como um estudo prático de desenvolvimento **Full Stack*
 
 ### Frontend
 
-- React
-- TypeScript
-- Tailwind CSS
+* React
+* TypeScript
+* TanStack Start
+* TanStack Router
+* TanStack Query
+* Tailwind CSS
+* shadcn/ui
 
 ### Backend
 
-- Node.js
-- Express
-- TypeScript
-- Prisma ORM
+* Node.js
+* Express
+* TypeScript
+* Prisma ORM
+* Zod
 
 ### Banco de dados
 
-- PostgreSQL
+* PostgreSQL
 
 ### Ferramentas
 
-- Git
-- GitHub
-- Insomnia
+* Git
+* GitHub
+* Insomnia
 
 ---
 
 ## 🏗️ Arquitetura
 
-O projeto utiliza uma arquitetura dividida entre frontend e backend:
+O projeto utiliza uma arquitetura separando frontend e backend através de uma API REST.
 
 ```text
-┌──────────────────────┐
-│       Frontend       │
-│ React + TypeScript   │
-└──────────┬───────────┘
-           │
-           │ HTTP / REST API
-           ▼
-┌──────────────────────┐
-│       Backend        │
-│ Express + TypeScript │
-└──────────┬───────────┘
-           │
-           │ Prisma ORM
-           ▼
-┌──────────────────────┐
-│      PostgreSQL      │
-└──────────────────────┘
+┌──────────────────────────┐
+│        Frontend          │
+│ React + TypeScript       │
+│ TanStack + Tailwind      │
+└────────────┬─────────────┘
+             │
+             │ HTTP / REST API
+             ▼
+┌──────────────────────────┐
+│         Backend          │
+│ Express + TypeScript     │
+│ Zod + Prisma             │
+└────────────┬─────────────┘
+             │
+             │ Prisma ORM
+             ▼
+┌──────────────────────────┐
+│       PostgreSQL         │
+└──────────────────────────┘
 ```
 
 ---
@@ -119,34 +142,31 @@ gameshelf/
 │   │   ├── services/
 │   │   ├── middlewares/
 │   │   ├── lib/
+│   │   ├── schemas/
 │   │   ├── app.ts
 │   │   └── server.ts
 │   │
 │   ├── prisma/
+│   │   ├── migrations/
 │   │   └── schema.prisma
 │   │
 │   ├── .env
-│   ├── .gitignore
 │   ├── package.json
 │   └── tsconfig.json
 │
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   ├── pages/
+│   │   ├── routes/
 │   │   ├── services/
+│   │   ├── hooks/
 │   │   ├── types/
-│   │   ├── App.tsx
-│   │   └── main.tsx
+│   │   └── ...
 │   │
 │   ├── package.json
 │   └── tsconfig.json
 │
 ├── docs/
-│   ├── architecture.md
-│   ├── database.md
-│   ├── api.md
-│   └── roadmap.md
 │
 ├── README.md
 └── .gitignore
@@ -156,35 +176,37 @@ gameshelf/
 
 ## 🗄️ Banco de dados
 
-A primeira versão utiliza três entidades principais:
+A aplicação utiliza PostgreSQL como banco de dados relacional.
+
+As principais entidades são:
 
 ```text
 Platform
     │
     │ 1:N
     ▼
- Game
+  Game
     ▲
     │ N:1
     │
- Genre
+  Genre
 ```
 
 ### Game
 
-| Campo | Tipo | Descrição |
-|---|---|---|
-| id | Integer | Identificador |
-| title | String | Nome do jogo |
-| description | String | Descrição |
-| coverUrl | String | URL da capa |
+| Campo       | Tipo     | Descrição          |
+| ----------- | -------- | ------------------ |
+| id          | Integer  | Identificador      |
+| title       | String   | Nome do jogo       |
+| description | String   | Descrição          |
+| coverUrl    | String   | URL da capa        |
 | releaseDate | DateTime | Data de lançamento |
-| status | Enum | Status do jogo |
-| rating | Integer | Nota pessoal |
-| platformId | Integer | Plataforma |
-| genreId | Integer | Gênero |
-| createdAt | DateTime | Data de criação |
-| updatedAt | DateTime | Última atualização |
+| status      | Enum     | Status do jogo     |
+| rating      | Integer  | Avaliação pessoal  |
+| platformId  | Integer  | Plataforma         |
+| genreId     | Integer  | Gênero             |
+| createdAt   | DateTime | Data de criação    |
+| updatedAt   | DateTime | Última atualização |
 
 ### Status
 
@@ -198,23 +220,23 @@ DROPPED
 
 ---
 
-## 🔌 API
+## 🔌 API REST
 
-A API seguirá o padrão REST.
+A comunicação entre frontend e backend é realizada através de uma API REST.
 
 ### Games
 
-| Método | Endpoint | Descrição |
-|---|---|---|
-| GET | `/api/games` | Lista os jogos |
-| GET | `/api/games/:id` | Busca um jogo |
-| POST | `/api/games` | Cria um jogo |
-| PUT | `/api/games/:id` | Atualiza um jogo |
-| DELETE | `/api/games/:id` | Exclui um jogo |
+| Método | Endpoint         | Descrição        |
+| ------ | ---------------- | ---------------- |
+| GET    | `/api/games`     | Lista os jogos   |
+| GET    | `/api/games/:id` | Busca um jogo    |
+| POST   | `/api/games`     | Cria um jogo     |
+| PUT    | `/api/games/:id` | Atualiza um jogo |
+| DELETE | `/api/games/:id` | Exclui um jogo   |
 
 ### Filtros
 
-Exemplos:
+Os filtros podem ser utilizados individualmente ou combinados.
 
 ```http
 GET /api/games?status=PLAYING
@@ -232,102 +254,162 @@ GET /api/games?genreId=2
 GET /api/games?search=pokemon
 ```
 
-Os filtros poderão ser combinados conforme a implementação da API.
+Também é possível combinar parâmetros:
+
+```http
+GET /api/games?status=PLAYING&platformId=1&genreId=2
+```
 
 ---
 
-## 🖥️ Interface
+## 🚀 Como executar
 
-A V1 contará inicialmente com as seguintes telas:
+### Pré-requisitos
 
-### 🏠 Home
+* Node.js
+* npm
+* PostgreSQL
 
-Visão geral da biblioteca e principais estatísticas.
+### Backend
 
-### 🎮 Biblioteca
+Entre na pasta:
 
-Lista completa dos jogos cadastrados, com busca e filtros.
+```bash
+cd backend
+```
 
-### ➕ Adicionar jogo
+Instale as dependências:
 
-Formulário para cadastrar um novo jogo.
+```bash
+npm install
+```
 
-### 📖 Detalhes do jogo
+Configure o arquivo `.env`:
 
-Exibe todas as informações de um jogo e permite editá-lo ou excluí-lo.
+```env
+DATABASE_URL="sua_connection_string"
+```
+
+Execute as migrations:
+
+```bash
+npx prisma migrate dev
+```
+
+Inicie o servidor:
+
+```bash
+npm run dev
+```
+
+### Frontend
+
+Em outro terminal:
+
+```bash
+cd frontend
+```
+
+Instale as dependências:
+
+```bash
+npm install
+```
+
+Configure o `.env`:
+
+```env
+VITE_API_URL="http://localhost:3000"
+```
+
+Inicie o frontend:
+
+```bash
+npm run dev
+```
 
 ---
 
-## 📋 Roadmap
+## 🗺️ Roadmap
 
-### V1 — CRUD
+### V1.0.0 — Biblioteca
 
-- [x] Configurar projeto
-- [x] Configurar PostgreSQL
-- [x] Configurar Prisma
-- [x] Criar schema do banco
-- [x] Criar migrations
-- [x] Criar seed
-- [x] Implementar CRUD de jogos
-- [x] Implementar CRUD de plataformas
-- [x] Implementar CRUD de gêneros
-- [x] Implementar filtros
-- [x] Criar frontend
-- [x] Conectar frontend com API
-- [x] Implementar tratamento de erros
-- [x] Tornar interface responsiva
+* [x] Configuração do projeto
+* [x] PostgreSQL
+* [x] Prisma
+* [x] Schema do banco
+* [x] Migrations
+* [x] CRUD de jogos
+* [x] CRUD de plataformas
+* [x] CRUD de gêneros
+* [x] Filtros
+* [x] Busca
+* [x] Integração frontend/backend
+* [x] Tratamento de erros
+* [x] Redesign da interface
+* [x] Tema claro e escuro
+* [x] Responsividade
+* [x] Testes manuais
+* [ ] Screenshots
+* [ ] Demo
+* [ ] Deploy
 
 ### V2 — Expansão
 
-- [ ] Sistema de autenticação
-- [ ] Perfil do usuário
-- [ ] Wishlist
-- [ ] Estatísticas da biblioteca
-- [ ] Avaliações
-- [ ] Integração com API externa de jogos
-- [ ] Upload de capas
-- [ ] Dashboard
+* [ ] Autenticação
+* [ ] Usuários
+* [ ] Wishlist avançada
+* [ ] Reviews
+* [ ] Dashboard
+* [ ] Estatísticas avançadas
+* [ ] Integração com IGDB
+* [ ] Integração com SteamGridDB
+* [ ] Integração com Steam
 
 ### V3 — Diferenciais
 
-- [ ] Recomendações de jogos
-- [ ] Sistema de conquistas
-- [ ] Histórico de jogos
-- [ ] Listas personalizadas
-- [ ] Compartilhamento de biblioteca
-- [ ] Deploy completo
+* [ ] Recomendações de jogos
+* [ ] Sistema de conquistas
+* [ ] Histórico de jogos
+* [ ] Listas personalizadas
+* [ ] Compartilhamento de biblioteca
+* [ ] Aplicação PWA
+* [ ] Aplicativo mobile
 
 ---
 
-## 📚 O que estou praticando
+## 📚 Conceitos praticados
 
-Durante o desenvolvimento do GameShelf, serão praticados conceitos como:
+Durante o desenvolvimento do GameShelf foram trabalhados conceitos como:
 
-- CRUD
-- API REST
-- HTTP
-- React
-- TypeScript
-- Node.js
-- Express
-- PostgreSQL
-- Prisma
-- Relacionamentos entre tabelas
-- Validação de dados
-- Tratamento de erros
-- Git e GitHub
-- Arquitetura de aplicações
-- Integração entre frontend e backend
+* CRUD
+* API REST
+* HTTP
+* React
+* TypeScript
+* Node.js
+* Express
+* PostgreSQL
+* Prisma ORM
+* Zod
+* TanStack Query
+* Relacionamentos entre tabelas
+* Validação de dados
+* Tratamento de erros
+* Arquitetura de aplicações
+* Integração frontend/backend
+* Git e GitHub
+* Design responsivo
 
 ---
 
-## 🧪 Status do projeto
+## 📌 Status
 
-🚧 **Em desenvolvimento**
+🚧 **V1 em finalização**
 
-O GameShelf está sendo desenvolvido inicialmente como um projeto de estudo e portfólio.
+O núcleo funcional da V1 está concluído, incluindo backend, frontend, CRUDs, filtros, redesign, responsividade e testes manuais.
 
-A versão atual está focada na construção da **V1 — CRUD básico**.
+Os próximos passos são documentação visual, demonstração e deploy da aplicação.
 
 ---
 
@@ -335,4 +417,10 @@ A versão atual está focada na construção da **V1 — CRUD básico**.
 
 **Matheus Henrique**
 
-Projeto desenvolvido para estudos e portfólio na área de desenvolvimento de software.# GameShelf
+Projeto desenvolvido para estudos e portfólio na área de desenvolvimento de software.
+
+---
+
+## 📄 Licença
+
+Este projeto está em desenvolvimento para fins de estudo e portfólio.
