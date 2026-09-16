@@ -59,14 +59,14 @@ O projeto foi desenvolvido como um projeto de estudo e portfólio, com foco em *
 
 ## 🎬 Demo
 
-![Criar jogo](docs/demos/create-game.gif)
+![Criar jogo](docs/demos/demo.gif)
 
 ---
 
 ## 🖼️ Screenshots
 
 ### Biblioteca (tema escuro)
-![Biblioteca - Tema Escuro](docs/screenshots/library-dark.png)
+![Biblioteca - Tema Escuro](docs/screenshots/library.png)
 
 ### Biblioteca (tema claro)
 ![Biblioteca - Tema Claro](docs/screenshots/library-light.png)
