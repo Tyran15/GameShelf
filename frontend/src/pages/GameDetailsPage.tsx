@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Calendar, Gamepad2, Loader2, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Gamepad2, Loader2, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -108,13 +108,22 @@ export function GameDetailsPage({ id }: { id: number }) {
             </p>
           </div>
 
-          <dl className="grid gap-4 sm:grid-cols-3">
+          <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <InfoBlock label="Plataforma" value={game.platform?.name ?? "—"} />
             <InfoBlock label="Gênero" value={game.genre?.name ?? "—"} />
             <InfoBlock
               label="Lançamento"
               value={formatDate(game.releaseDate)}
               icon={<Calendar className="size-3.5" />}
+            />
+            <InfoBlock
+              label="Horas jogadas"
+              value={
+                game.hoursPlayed !== null && game.hoursPlayed !== undefined
+                  ? `${game.hoursPlayed}h`
+                  : "—"
+              }
+              icon={<Clock className="size-3.5" />}
             />
           </dl>
 

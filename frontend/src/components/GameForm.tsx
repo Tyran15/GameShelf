@@ -28,6 +28,7 @@ type FormState = {
   releaseDate: string;
   status: GameStatus;
   rating: string;
+  hoursPlayed: string;
   platformId: string;
   genreId: string;
 };
@@ -42,6 +43,10 @@ function initialState(game?: Game): FormState {
     rating:
       game?.rating !== null && game?.rating !== undefined
         ? String(game.rating)
+        : "",
+    hoursPlayed:
+      game?.hoursPlayed !== null && game?.hoursPlayed !== undefined
+        ? String(game.hoursPlayed)
         : "",
     platformId: game ? String(game.platformId) : "",
     genreId: game ? String(game.genreId) : "",
@@ -117,6 +122,19 @@ export function GameForm({
     set("rating", truncated);
   }
 
+  // Handler do campo de horas jogadas: aceita dígitos e um único ponto decimal.
+  // Sem teto de valor (o usuário define o quanto jogou, sem limite artificial).
+  function handleHoursPlayedChange(raw: string) {
+    if (raw === "") {
+      set("hoursPlayed", "");
+      return;
+    }
+
+    if (!/^\d*\.?\d*$/.test(raw)) return;
+
+    set("hoursPlayed", raw);
+  }
+
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
 
@@ -130,6 +148,12 @@ export function GameForm({
         errors.rating = "A nota deve ser entre 0 e 10.";
       } else if (!/^\d{1,2}(\.\d)?$/.test(form.rating)) {
         errors.rating = "Use apenas uma casa decimal (ex.: 7.4).";
+      }
+    }
+    if (form.hoursPlayed !== "") {
+      const value = Number(form.hoursPlayed);
+      if (Number.isNaN(value) || value < 0) {
+        errors.hoursPlayed = "Informe um valor válido (0 ou mais).";
       }
     }
     setLocalErrors(errors);
@@ -146,6 +170,9 @@ export function GameForm({
     if (form.releaseDate)
       payload.releaseDate = `${form.releaseDate}T00:00:00.000Z`;
     if (form.rating !== "") payload.rating = Number(form.rating);
+    // Sempre enviado (número ou null), nunca omitido: permite limpar o valor
+    // num update sem afetar os demais campos parciais.
+    payload.hoursPlayed = form.hoursPlayed !== "" ? Number(form.hoursPlayed) : null;
 
     onSubmit(payload);
   }
@@ -317,6 +344,22 @@ export function GameForm({
             />
             <FieldError message={errorFor("rating")} />
           </div>
+        </div>
+
+        <div className="grid gap-3">
+          <Label htmlFor="hoursPlayed" className="text-base">
+            Horas jogadas
+          </Label>
+          <Input
+            id="hoursPlayed"
+            type="text"
+            inputMode="decimal"
+            value={form.hoursPlayed}
+            onChange={(e) => handleHoursPlayedChange(e.target.value)}
+            placeholder="Ex.: 42.5"
+            className="h-12 text-base [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
+          <FieldError message={errorFor("hoursPlayed")} />
         </div>
 
         <div className="grid gap-7 md:grid-cols-2">

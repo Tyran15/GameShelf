@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Gamepad2 } from "lucide-react";
+import { Clock, Gamepad2 } from "lucide-react";
 import { RatingPill } from "./RatingPill";
 import { StatusBadge } from "./StatusBadge";
 import { useGenres } from "@/hooks/useGenres";
@@ -73,6 +73,13 @@ export function GameCard({ game }: { game: Game }) {
         {game.rating !== null && game.rating !== undefined ? (
           <div className="flex items-center">
             <RatingPill rating={game.rating} />
+          </div>
+        ) : null}
+
+        {game.hoursPlayed !== null && game.hoursPlayed !== undefined ? (
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Clock className="size-3" />
+            {game.hoursPlayed}h jogadas
           </div>
         ) : null}
       </div>

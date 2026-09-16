@@ -15,6 +15,7 @@ export interface CreateGameInput {
   releaseDate?: Date | string;
   status?: GameStatus;
   rating?: number;
+  hoursPlayed?: number | null;
   platformId: number;
   genreId: number;
 }
@@ -82,6 +83,7 @@ export interface UpdateGameInput {
   releaseDate?: Date | string;
   status?: GameStatus;
   rating?: number;
+  hoursPlayed?: number | null;
   platformId?: number;
   genreId?: number;
 }

@@ -22,6 +22,7 @@ model Game {
   releaseDate DateTime?
   status      GameStatus @default(WISHLIST)
   rating      Int?
+  hoursPlayed Float?
 
   platformId  Int
   genreId     Int

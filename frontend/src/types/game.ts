@@ -27,6 +27,7 @@ export interface Game {
   releaseDate: string | null;
   status: GameStatus;
   rating: number | null;
+  hoursPlayed: number | null;
   platformId: number;
   genreId: number;
   platform: Platform;
@@ -42,6 +43,7 @@ export interface GameInput {
   releaseDate?: string;
   status?: GameStatus;
   rating?: number;
+  hoursPlayed?: number | null;
   platformId: number;
   genreId: number;
 }

@@ -25,6 +25,16 @@ export const createGameSchema = z.object({
     .max(10)
     .optional(),
 
+  // Aceita número, string numérica ("12.5"), null (limpar) ou ausente (não mexer).
+  // "" é tratado como null antes da validação, para não virar 0 por coerção.
+  hoursPlayed: z.preprocess(
+    (val) => (val === "" ? null : val),
+    z.union([
+      z.null(),
+      z.coerce.number().min(0, "Horas jogadas não pode ser negativo."),
+    ]),
+  ).optional(),
+
   platformId: z.coerce.number(),
   genreId: z.coerce.number(),
 });
