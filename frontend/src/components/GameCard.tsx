@@ -2,43 +2,79 @@ import { Link } from "@tanstack/react-router";
 import { Gamepad2 } from "lucide-react";
 import { RatingPill } from "./RatingPill";
 import { StatusBadge } from "./StatusBadge";
+import { useGenres } from "@/hooks/useGenres";
+import { usePlatforms } from "@/hooks/usePlatforms";
 import type { Game } from "@/types/game";
 
 export function GameCard({ game }: { game: Game }) {
+  const platforms = usePlatforms();
+  const genres = useGenres();
+
+  const platformName = platforms.data?.find(
+    (p) => p.id === game.platformId
+  )?.name;
+  const genreName = genres.data?.find((g) => g.id === game.genreId)?.name;
+
   return (
     <Link
       to="/games/$id"
       params={{ id: String(game.id) }}
-      className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-card transition-all hover:-translate-y-0.5 hover:border-primary/50"
+      className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-card transition-all hover:-translate-y-0.5 hover:border-primary/50"
     >
-      <div className="relative aspect-[3/4] overflow-hidden bg-secondary">
+      {/* Capa em proporção 2:3 com blur de fundo */}
+      <div className="relative aspect-[2/3] overflow-hidden bg-secondary">
         {game.coverUrl ? (
-          <img
-            src={game.coverUrl}
-            alt={`Capa de ${game.title}`}
-            loading="lazy"
-            className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
-          />
+          <>
+            {/* Fundo desfocado preenchendo o card */}
+            <img
+              src={game.coverUrl}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 size-full scale-110 object-cover blur-xl opacity-60"
+            />
+            {/* Imagem principal, sem corte */}
+            <img
+              src={game.coverUrl}
+              alt={`Capa de ${game.title}`}
+              loading="lazy"
+              className="relative size-full object-contain transition-transform duration-300 group-hover:scale-105"
+            />
+          </>
         ) : (
           <div className="flex size-full items-center justify-center text-muted-foreground">
             <Gamepad2 className="size-10" />
           </div>
         )}
+
         <div className="absolute left-2 top-2">
           <StatusBadge status={game.status} className="backdrop-blur-sm" />
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 p-3">
-        <h3 className="line-clamp-2 text-sm font-semibold leading-snug">
+      {/* Infos do card */}
+      <div className="grid gap-1.5 p-3">
+        <h3 className="line-clamp-2 text-sm font-semibold">
           {game.title}
         </h3>
-        <p className="text-xs text-muted-foreground">
-          {game.platform?.name} · {game.genre?.name}
-        </p>
-        <div className="mt-auto pt-1">
-          <RatingPill rating={game.rating} />
+
+        <div className="flex flex-wrap gap-1.5 text-xs text-muted-foreground">
+          {platformName ? (
+            <span className="rounded bg-muted px-2 py-0.5">
+              {platformName}
+            </span>
+          ) : null}
+          {genreName ? (
+            <span className="rounded bg-muted px-2 py-0.5">
+              {genreName}
+            </span>
+          ) : null}
         </div>
+
+        {game.rating !== null && game.rating !== undefined ? (
+          <div className="flex items-center">
+            <RatingPill rating={game.rating} />
+          </div>
+        ) : null}
       </div>
     </Link>
   );

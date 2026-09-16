@@ -73,13 +73,21 @@ export function GameDetailsPage({ id }: { id: number }) {
 
       <div className="grid gap-8 md:grid-cols-[280px_1fr]">
         <div className="overflow-hidden rounded-xl border border-border bg-card shadow-card">
-          <div className="aspect-[3/4] bg-secondary">
+          <div className="relative aspect-[2/3] bg-secondary">
             {game.coverUrl ? (
-              <img
-                src={game.coverUrl}
-                alt={`Capa de ${game.title}`}
-                className="size-full object-cover"
-              />
+              <>
+                <img
+                  src={game.coverUrl}
+                  alt=""
+                  aria-hidden="true"
+                  className="absolute inset-0 size-full scale-110 object-cover blur-2xl opacity-50"
+                />
+                <img
+                  src={game.coverUrl}
+                  alt={`Capa de ${game.title}`}
+                  className="relative size-full object-contain"
+                />
+              </>
             ) : (
               <div className="flex size-full items-center justify-center text-muted-foreground">
                 <Gamepad2 className="size-12" />
