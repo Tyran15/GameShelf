@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GenresRouteImport } from './routes/genres'
+import { Route as PlatformsRouteImport } from './routes/platforms'
 import { Route as GamesNewRouteImport } from './routes/games.new'
 import { Route as GamesIdIndexRouteImport } from './routes/games.$id.index'
 import { Route as GamesIdEditRouteImport } from './routes/games.$id.edit'
@@ -17,6 +19,16 @@ import { Route as GamesIdEditRouteImport } from './routes/games.$id.edit'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GenresRoute = GenresRouteImport.update({
+  id: '/genres',
+  path: '/genres',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlatformsRoute = PlatformsRouteImport.update({
+  id: '/platforms',
+  path: '/platforms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GamesNewRoute = GamesNewRouteImport.update({
@@ -37,12 +49,16 @@ const GamesIdEditRoute = GamesIdEditRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/genres': typeof GenresRoute
+  '/platforms': typeof PlatformsRoute
   '/games/new': typeof GamesNewRoute
   '/games/$id/edit': typeof GamesIdEditRoute
   '/games/$id/': typeof GamesIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/genres': typeof GenresRoute
+  '/platforms': typeof PlatformsRoute
   '/games/new': typeof GamesNewRoute
   '/games/$id/edit': typeof GamesIdEditRoute
   '/games/$id': typeof GamesIdIndexRoute
@@ -50,20 +66,43 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/genres': typeof GenresRoute
+  '/platforms': typeof PlatformsRoute
   '/games/new': typeof GamesNewRoute
   '/games/$id/edit': typeof GamesIdEditRoute
   '/games/$id/': typeof GamesIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/games/new' | '/games/$id/edit' | '/games/$id/'
+  fullPaths:
+    | '/'
+    | '/genres'
+    | '/platforms'
+    | '/games/new'
+    | '/games/$id/edit'
+    | '/games/$id/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/games/new' | '/games/$id/edit' | '/games/$id'
-  id: '__root__' | '/' | '/games/new' | '/games/$id/edit' | '/games/$id/'
+  to:
+    | '/'
+    | '/genres'
+    | '/platforms'
+    | '/games/new'
+    | '/games/$id/edit'
+    | '/games/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/genres'
+    | '/platforms'
+    | '/games/new'
+    | '/games/$id/edit'
+    | '/games/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  GenresRoute: typeof GenresRoute
+  PlatformsRoute: typeof PlatformsRoute
   GamesNewRoute: typeof GamesNewRoute
   GamesIdEditRoute: typeof GamesIdEditRoute
   GamesIdIndexRoute: typeof GamesIdIndexRoute
@@ -76,6 +115,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/genres': {
+      id: '/genres'
+      path: '/genres'
+      fullPath: '/genres'
+      preLoaderRoute: typeof GenresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/platforms': {
+      id: '/platforms'
+      path: '/platforms'
+      fullPath: '/platforms'
+      preLoaderRoute: typeof PlatformsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/games/new': {
@@ -104,6 +157,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  GenresRoute: GenresRoute,
+  PlatformsRoute: PlatformsRoute,
   GamesNewRoute: GamesNewRoute,
   GamesIdEditRoute: GamesIdEditRoute,
   GamesIdIndexRoute: GamesIdIndexRoute,

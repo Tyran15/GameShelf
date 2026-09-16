@@ -71,7 +71,7 @@ export function GameDetailsPage({ id }: { id: number }) {
     <div className="page-shell space-y-6">
       <BackLink />
 
-      <div className="grid gap-8 md:grid-cols-[280px_1fr]">
+      <div className="grid gap-8 md:grid-cols-[300px_1fr]">
         <div className="overflow-hidden rounded-xl border border-border bg-card shadow-card">
           <div className="relative aspect-[2/3] bg-secondary">
             {game.coverUrl ? (

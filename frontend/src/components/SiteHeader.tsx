@@ -9,11 +9,7 @@ export function SiteHeader() {
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-3">
         <Link to="/" className="flex items-center gap-2">
           <div className="flex items-center">
-            <img
-              src="../../public/logo.ico"
-              alt="GameShelf Logo"
-              className="h-10 w-auto"
-            />
+            <img src="../../public/logo.ico" alt="GameShelf Logo" className="h-10 w-auto" />
           </div>
           <span className="font-display text-lg font-bold tracking-tight">
             Game<span className="text-primary">Shelf</span>
@@ -24,6 +20,16 @@ export function SiteHeader() {
           <Button asChild variant="ghost" size="sm">
             <Link to="/" activeProps={{ className: "text-primary" }}>
               Biblioteca
+            </Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/platforms" activeProps={{ className: "text-primary" }}>
+              Plataformas
+            </Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/genres" activeProps={{ className: "text-primary" }}>
+              Gêneros
             </Link>
           </Button>
           <div className="flex items-center gap-2">
