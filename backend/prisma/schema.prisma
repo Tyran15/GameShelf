@@ -21,7 +21,7 @@ model Game {
   coverUrl    String?
   releaseDate DateTime?
   status      GameStatus @default(WISHLIST)
-  rating      Int?
+  rating      Float?
   hoursPlayed Float?
 
   platformId  Int
