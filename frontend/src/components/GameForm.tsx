@@ -53,11 +53,6 @@ function initialState(game?: Game): FormState {
   };
 }
 
-/**
- * Converte uma string decimal em número.
- * Retorna null quando a string está vazia, é só "." ou só "-." (casos
- * em que Number() retornaria NaN ou 0 indevidamente).
- */
 function parseDecimal(value: string): number | null {
   const trimmed = value.trim();
   if (trimmed === "" || trimmed === ".") return null;
@@ -105,7 +100,6 @@ export function GameForm({
   );
   const statusLabel = GAME_STATUS_LABELS[form.status];
 
-  // Exibe a nota: "10" quando for exatamente 10, senão uma casa decimal (ex.: 7.4)
   const ratingDisplay =
     form.rating !== ""
       ? Number(form.rating) === 10
@@ -113,16 +107,16 @@ export function GameForm({
         : Number(form.rating).toFixed(1)
       : null;
 
-  // Handler específico da nota: 0 a 10, com 1 casa decimal
   function handleRatingChange(raw: string) {
     if (raw === "") {
       set("rating", "");
       return;
     }
 
-    if (!/^\d*\.?\d*$/.test(raw)) return;
+    const normalized = raw.replace(",", ".");
+    if (!/^\d*\.?\d*$/.test(normalized)) return;
 
-    const truncated = raw.replace(/^(\d+)(\.\d?)?.*$/, "$1$2");
+    const truncated = normalized.replace(/^(\d+)(\.\d?)?.*$/, "$1$2");
 
     const [intPart, decPart = ""] = truncated.split(".");
     if (intPart && intPart !== "" && Number(intPart) > 10) return;
@@ -131,17 +125,16 @@ export function GameForm({
     set("rating", truncated);
   }
 
-  // Handler do campo de horas jogadas: aceita dígitos e um único ponto decimal.
-  // Sem teto de valor (o usuário define o quanto jogou, sem limite artificial).
   function handleHoursPlayedChange(raw: string) {
     if (raw === "") {
       set("hoursPlayed", "");
       return;
     }
 
-    if (!/^\d*\.?\d*$/.test(raw)) return;
+    const normalized = raw.replace(",", ".");
+    if (!/^\d*\.?\d*$/.test(normalized)) return;
 
-    set("hoursPlayed", raw);
+    set("hoursPlayed", normalized);
   }
 
   function handleSubmit(event: React.FormEvent) {
@@ -179,15 +172,7 @@ export function GameForm({
     if (form.releaseDate)
       payload.releaseDate = `${form.releaseDate}T00:00:00.000Z`;
     if (form.rating !== "") payload.rating = Number(form.rating);
-
-    // Sempre enviado (número ou null), nunca omitido: permite limpar o valor
-    // num update sem afetar os demais campos parciais.
-    // parseDecimal() trata "." e "" como null, evitando enviar NaN.
     payload.hoursPlayed = parseDecimal(form.hoursPlayed);
-
-    // 🔍 DEBUG: descomente a linha abaixo pra ver exatamente o que está sendo
-    // enviado ao backend. Abra o DevTools → Console e procure por "payload".
-    // console.log("[GameForm] payload:", payload);
 
     onSubmit(payload);
   }
@@ -195,12 +180,12 @@ export function GameForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="grid gap-8 lg:grid-cols-[240px_minmax(0,33vw)] lg:items-start"
+      className="grid gap-6 lg:grid-cols-[220px_minmax(0,33vw)] lg:items-start"
     >
       {/* ----- Card de pré-visualização ----- */}
-      <aside className="mx-auto w-full max-w-[240px] lg:mx-0">
-        <div className="sticky top-8">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <aside className="mx-auto w-full max-w-[220px] lg:mx-0">
+        <div className="lg:sticky lg:top-6">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Pré-visualização
           </p>
 
@@ -269,9 +254,10 @@ export function GameForm({
       </aside>
 
       {/* ----- Campos do formulário ----- */}
-      <div className="grid w-full gap-7 rounded-2xl border border-border bg-surface p-6 shadow-card md:p-8">
-        <div className="grid gap-3">
-          <Label htmlFor="title" className="text-base">
+      <div className="grid w-full gap-4 rounded-2xl border border-border bg-surface p-5 shadow-card md:p-6">
+        {/* Título */}
+        <div className="grid gap-2">
+          <Label htmlFor="title" className="text-sm">
             Título *
           </Label>
           <Input
@@ -279,29 +265,31 @@ export function GameForm({
             value={form.title}
             onChange={(e) => set("title", e.target.value)}
             placeholder="Ex.: Hollow Knight"
-            className="h-12 text-base"
+            className="h-11"
           />
           <FieldError message={errorFor("title")} />
         </div>
 
-        <div className="grid gap-3">
-          <Label htmlFor="description" className="text-base">
+        {/* Descrição */}
+        <div className="grid gap-2">
+          <Label htmlFor="description" className="text-sm">
             Descrição
           </Label>
           <Textarea
             id="description"
             value={form.description}
             onChange={(e) => set("description", e.target.value)}
-            rows={5}
+            rows={3}
             placeholder="Anotações sobre o jogo..."
-            className="text-base"
+            className="min-h-[80px]"
           />
           <FieldError message={errorFor("description")} />
         </div>
 
-        <div className="grid gap-7 md:grid-cols-2">
-          <div className="grid gap-3">
-            <Label htmlFor="coverUrl" className="text-base">
+        {/* URL da capa + Data de lançamento */}
+        <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-2">
+            <Label htmlFor="coverUrl" className="text-sm">
               URL da capa
             </Label>
             <Input
@@ -309,13 +297,13 @@ export function GameForm({
               value={form.coverUrl}
               onChange={(e) => set("coverUrl", e.target.value)}
               placeholder="https://..."
-              className="h-12 text-base"
+              className="h-11"
             />
             <FieldError message={errorFor("coverUrl")} />
           </div>
 
-          <div className="grid gap-3">
-            <Label htmlFor="releaseDate" className="text-base">
+          <div className="grid gap-2">
+            <Label htmlFor="releaseDate" className="text-sm">
               Data de lançamento
             </Label>
             <Input
@@ -323,22 +311,23 @@ export function GameForm({
               type="date"
               value={form.releaseDate}
               onChange={(e) => set("releaseDate", e.target.value)}
-              className="h-12 text-base"
+              className="h-11"
             />
             <FieldError message={errorFor("releaseDate")} />
           </div>
         </div>
 
-        <div className="grid gap-7 md:grid-cols-2">
-          <div className="grid gap-3">
-            <Label htmlFor="status" className="text-base">
+        {/* Status + Nota + Horas jogadas (3 colunas em md+) */}
+        <div className="grid gap-5 md:grid-cols-3">
+          <div className="grid gap-2">
+            <Label htmlFor="status" className="text-sm">
               Status
             </Label>
             <Select
               value={form.status}
               onValueChange={(v) => set("status", v as GameStatus)}
             >
-              <SelectTrigger id="status" className="h-12 text-base">
+              <SelectTrigger id="status" className="h-11">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -352,8 +341,8 @@ export function GameForm({
             <FieldError message={errorFor("status")} />
           </div>
 
-          <div className="grid gap-3">
-            <Label htmlFor="rating" className="text-base">
+          <div className="grid gap-2">
+            <Label htmlFor="rating" className="text-sm">
               Nota (0 a 10)
             </Label>
             <Input
@@ -363,38 +352,47 @@ export function GameForm({
               value={form.rating}
               onChange={(e) => handleRatingChange(e.target.value)}
               placeholder="Ex.: 7.4"
-              className="h-12 text-base"
+              className="h-11"
             />
             <FieldError message={errorFor("rating")} />
           </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="hoursPlayed" className="text-sm">
+              Horas jogadas
+            </Label>
+            <div className="relative">
+              <Input
+                id="hoursPlayed"
+                type="text"
+                inputMode="decimal"
+                value={form.hoursPlayed}
+                onChange={(e) => handleHoursPlayedChange(e.target.value)}
+                placeholder="Ex.: 42.5"
+                className="h-11 pr-9"
+              />
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground"
+              >
+                h
+              </span>
+            </div>
+            <FieldError message={errorFor("hoursPlayed")} />
+          </div>
         </div>
 
-        <div className="grid gap-3">
-          <Label htmlFor="hoursPlayed" className="text-base">
-            Horas jogadas
-          </Label>
-          <Input
-            id="hoursPlayed"
-            type="text"
-            inputMode="decimal"
-            value={form.hoursPlayed}
-            onChange={(e) => handleHoursPlayedChange(e.target.value)}
-            placeholder="Ex.: 42.5"
-            className="h-12 text-base"
-          />
-          <FieldError message={errorFor("hoursPlayed")} />
-        </div>
-
-        <div className="grid gap-7 md:grid-cols-2">
-          <div className="grid gap-3">
-            <Label htmlFor="platformId" className="text-base">
+        {/* Plataforma + Gênero */}
+        <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-2">
+            <Label htmlFor="platformId" className="text-sm">
               Plataforma *
             </Label>
             <Select
               value={form.platformId}
               onValueChange={(v) => set("platformId", v)}
             >
-              <SelectTrigger id="platformId" className="h-12 text-base">
+              <SelectTrigger id="platformId" className="h-11">
                 <SelectValue
                   placeholder={
                     platforms.isLoading ? "Carregando..." : "Selecione"
@@ -415,15 +413,15 @@ export function GameForm({
             ) : null}
           </div>
 
-          <div className="grid gap-3">
-            <Label htmlFor="genreId" className="text-base">
+          <div className="grid gap-2">
+            <Label htmlFor="genreId" className="text-sm">
               Gênero *
             </Label>
             <Select
               value={form.genreId}
               onValueChange={(v) => set("genreId", v)}
             >
-              <SelectTrigger id="genreId" className="h-12 text-base">
+              <SelectTrigger id="genreId" className="h-11">
                 <SelectValue
                   placeholder={
                     genres.isLoading ? "Carregando..." : "Selecione"
@@ -445,19 +443,20 @@ export function GameForm({
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:justify-end">
+        {/* Botões */}
+        <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:justify-end">
           <Button
             type="button"
             variant="outline"
             onClick={onCancel}
-            className="h-12 px-6 text-base"
+            className="h-11 px-5"
           >
             Cancelar
           </Button>
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="h-12 px-6 text-base"
+            className="h-11 px-5"
           >
             {isSubmitting ? (
               <Loader2 className="size-5 animate-spin" />
@@ -473,6 +472,6 @@ export function GameForm({
 function FieldError({ message }: { message?: string | undefined }) {
   if (!message) return null;
   return (
-    <p className="text-sm font-medium text-destructive">{message}</p>
+    <p className="text-xs font-medium text-destructive">{message}</p>
   );
 }
