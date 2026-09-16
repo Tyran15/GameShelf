@@ -53,6 +53,18 @@ function initialState(game?: Game): FormState {
   };
 }
 
+/**
+ * Converte uma string decimal em número.
+ * Retorna null quando a string está vazia, é só "." ou só "-." (casos
+ * em que Number() retornaria NaN ou 0 indevidamente).
+ */
+function parseDecimal(value: string): number | null {
+  const trimmed = value.trim();
+  if (trimmed === "" || trimmed === ".") return null;
+  const n = Number(trimmed);
+  return Number.isFinite(n) ? n : null;
+}
+
 export function GameForm({
   game,
   submitLabel,
@@ -108,13 +120,10 @@ export function GameForm({
       return;
     }
 
-    // Aceita apenas dígitos e um único ponto
     if (!/^\d*\.?\d*$/.test(raw)) return;
 
-    // Trunca para no máximo 1 casa decimal
     const truncated = raw.replace(/^(\d+)(\.\d?)?.*$/, "$1$2");
 
-    // Bloqueia se o valor já passar de 10
     const [intPart, decPart = ""] = truncated.split(".");
     if (intPart && intPart !== "" && Number(intPart) > 10) return;
     if (intPart === "10" && decPart !== "" && decPart !== "0") return;
@@ -151,8 +160,8 @@ export function GameForm({
       }
     }
     if (form.hoursPlayed !== "") {
-      const value = Number(form.hoursPlayed);
-      if (Number.isNaN(value) || value < 0) {
+      const value = parseDecimal(form.hoursPlayed);
+      if (value === null || value < 0) {
         errors.hoursPlayed = "Informe um valor válido (0 ou mais).";
       }
     }
@@ -170,9 +179,15 @@ export function GameForm({
     if (form.releaseDate)
       payload.releaseDate = `${form.releaseDate}T00:00:00.000Z`;
     if (form.rating !== "") payload.rating = Number(form.rating);
+
     // Sempre enviado (número ou null), nunca omitido: permite limpar o valor
     // num update sem afetar os demais campos parciais.
-    payload.hoursPlayed = form.hoursPlayed !== "" ? Number(form.hoursPlayed) : null;
+    // parseDecimal() trata "." e "" como null, evitando enviar NaN.
+    payload.hoursPlayed = parseDecimal(form.hoursPlayed);
+
+    // 🔍 DEBUG: descomente a linha abaixo pra ver exatamente o que está sendo
+    // enviado ao backend. Abra o DevTools → Console e procure por "payload".
+    // console.log("[GameForm] payload:", payload);
 
     onSubmit(payload);
   }
@@ -189,18 +204,26 @@ export function GameForm({
             Pré-visualização
           </p>
 
-          <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-lg">
-            <div className="relative aspect-[2/3] w-full bg-muted/40">
+          <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-card">
+            <div className="relative aspect-[2/3] w-full overflow-hidden bg-secondary">
               {form.coverUrl.trim() && !coverError ? (
-                <img
-                  src={form.coverUrl.trim()}
-                  alt={form.title || "Capa do jogo"}
-                  className="h-full w-full object-cover"
-                  onError={() => setCoverError(true)}
-                  onLoad={() => setCoverError(false)}
-                />
+                <>
+                  <img
+                    src={form.coverUrl.trim()}
+                    alt=""
+                    aria-hidden="true"
+                    className="absolute inset-0 size-full scale-110 object-cover blur-xl opacity-60"
+                  />
+                  <img
+                    src={form.coverUrl.trim()}
+                    alt={form.title || "Capa do jogo"}
+                    className="relative size-full object-contain"
+                    onError={() => setCoverError(true)}
+                    onLoad={() => setCoverError(false)}
+                  />
+                </>
               ) : (
-                <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-muted-foreground">
+                <div className="flex size-full flex-col items-center justify-center gap-2 text-muted-foreground">
                   <ImageOff className="size-10" />
                   <span className="px-3 text-center text-xs">
                     {coverError
@@ -246,7 +269,7 @@ export function GameForm({
       </aside>
 
       {/* ----- Campos do formulário ----- */}
-      <div className="grid w-full gap-7 rounded-2xl border border-border bg-surface p-6 md:p-8">
+      <div className="grid w-full gap-7 rounded-2xl border border-border bg-surface p-6 shadow-card md:p-8">
         <div className="grid gap-3">
           <Label htmlFor="title" className="text-base">
             Título *
@@ -340,7 +363,7 @@ export function GameForm({
               value={form.rating}
               onChange={(e) => handleRatingChange(e.target.value)}
               placeholder="Ex.: 7.4"
-              className="h-12 text-base [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              className="h-12 text-base"
             />
             <FieldError message={errorFor("rating")} />
           </div>
@@ -357,7 +380,7 @@ export function GameForm({
             value={form.hoursPlayed}
             onChange={(e) => handleHoursPlayedChange(e.target.value)}
             placeholder="Ex.: 42.5"
-            className="h-12 text-base [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            className="h-12 text-base"
           />
           <FieldError message={errorFor("hoursPlayed")} />
         </div>
