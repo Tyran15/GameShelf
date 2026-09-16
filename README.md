@@ -6,9 +6,11 @@
 
 O **GameShelf** é uma aplicação web full stack desenvolvida para gerenciamento de uma biblioteca pessoal de jogos.
 
-A aplicação permite cadastrar, organizar, pesquisar e filtrar jogos por **plataforma, gênero e status**, além de acompanhar informações como avaliação, data de lançamento e descrição.
+A aplicação permite cadastrar, organizar, pesquisar e filtrar jogos por **plataforma, gênero e status**, além de acompanhar informações como avaliação, horas jogadas, data de lançamento e descrição.
 
 O projeto foi desenvolvido como um projeto de estudo e portfólio, com foco em **desenvolvimento Full Stack, APIs REST, integração entre frontend e backend, banco de dados relacional e boas práticas de organização de código**.
+
+**Repositório:** [https://github.com/Tyran15/GameShelf](https://github.com/Tyran15/GameShelf)
 
 ---
 
@@ -21,14 +23,15 @@ O projeto foi desenvolvido como um projeto de estudo e portfólio, com foco em *
 * [x] Visualizar detalhes
 * [x] Editar jogo
 * [x] Excluir jogo
-* [x] Pesquisar jogos
+* [x] Pesquisar jogos por título
 * [x] Filtrar por status
 * [x] Filtrar por plataforma
 * [x] Filtrar por gênero
 * [x] Combinar filtros
-* [x] Avaliar jogos
+* [x] Avaliar jogos (nota de 0 a 10, com uma casa decimal)
 * [x] Definir status de progresso
 * [x] Registrar data de lançamento
+* [x] Registrar horas jogadas (com uma casa decimal)
 
 ### 🕹️ Plataformas
 
@@ -50,23 +53,35 @@ O projeto foi desenvolvido como um projeto de estudo e portfólio, com foco em *
 * [x] Tema claro
 * [x] Tema escuro
 * [x] Interface para desktop, tablet e mobile
-* [x] Dashboard/home com informações da biblioteca
+* [x] Dashboard/home com estatísticas da biblioteca
+
+---
+
+## 🎬 Demo
+
+![Criar jogo](docs/demos/create-game.gif)
 
 ---
 
 ## 🖼️ Screenshots
 
-> Screenshots da aplicação serão adicionados aqui.
+### Biblioteca (tema escuro)
+![Biblioteca - Tema Escuro](docs/screenshots/library-dark.png)
 
-<!--
-Exemplo:
+### Biblioteca (tema claro)
+![Biblioteca - Tema Claro](docs/screenshots/library-light.png)
 
-![Home](docs/screenshots/home.png)
-
-![Biblioteca](docs/screenshots/library.png)
-
+### Detalhes do jogo
 ![Detalhes do jogo](docs/screenshots/game-details.png)
--->
+
+### Formulário de jogo
+![Formulário de jogo](docs/screenshots/game-form.png)
+
+### Plataformas
+![Plataformas](docs/screenshots/platforms.png)
+
+### Gêneros
+![Gêneros](docs/screenshots/genres.png)
 
 ---
 
@@ -81,6 +96,7 @@ Exemplo:
 * TanStack Query
 * Tailwind CSS
 * shadcn/ui
+* Vite
 
 ### Backend
 
@@ -99,6 +115,7 @@ Exemplo:
 * Git
 * GitHub
 * Insomnia
+* Docker
 
 ---
 
@@ -140,7 +157,6 @@ gameshelf/
 │   │   ├── controllers/
 │   │   ├── routes/
 │   │   ├── services/
-│   │   ├── middlewares/
 │   │   ├── lib/
 │   │   ├── schemas/
 │   │   ├── app.ts
@@ -148,15 +164,16 @@ gameshelf/
 │   │
 │   ├── prisma/
 │   │   ├── migrations/
-│   │   └── schema.prisma
+│   │   ├── schema.prisma
+│   │   └── seed.ts
 │   │
-│   ├── .env
 │   ├── package.json
 │   └── tsconfig.json
 │
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
+│   │   ├── pages/
 │   │   ├── routes/
 │   │   ├── services/
 │   │   ├── hooks/
@@ -167,7 +184,17 @@ gameshelf/
 │   └── tsconfig.json
 │
 ├── docs/
+│   ├── demos/
+│   │   └── create-game.gif
+│   └── screenshots/
+│       ├── library-dark.png
+│       ├── library-light.png
+│       ├── game-details.png
+│       ├── game-form.png
+│       ├── platforms.png
+│       └── genres.png
 │
+├── docker-compose.yml
 ├── README.md
 └── .gitignore
 ```
@@ -194,19 +221,20 @@ Platform
 
 ### Game
 
-| Campo       | Tipo     | Descrição          |
-| ----------- | -------- | ------------------ |
-| id          | Integer  | Identificador      |
-| title       | String   | Nome do jogo       |
-| description | String   | Descrição          |
-| coverUrl    | String   | URL da capa        |
-| releaseDate | DateTime | Data de lançamento |
-| status      | Enum     | Status do jogo     |
-| rating      | Integer  | Avaliação pessoal  |
-| platformId  | Integer  | Plataforma         |
-| genreId     | Integer  | Gênero             |
-| createdAt   | DateTime | Data de criação    |
-| updatedAt   | DateTime | Última atualização |
+| Campo       | Tipo     | Descrição                          |
+| ----------- | -------- | ---------------------------------- |
+| id          | Integer  | Identificador                      |
+| title       | String   | Nome do jogo                       |
+| description | String   | Descrição                          |
+| coverUrl    | String   | URL da capa                        |
+| releaseDate | DateTime | Data de lançamento                 |
+| status      | Enum     | Status do jogo                     |
+| rating      | Float    | Avaliação pessoal (0 a 10)         |
+| hoursPlayed | Float    | Horas jogadas                      |
+| platformId  | Integer  | Plataforma                         |
+| genreId     | Integer  | Gênero                             |
+| createdAt   | DateTime | Data de criação                    |
+| updatedAt   | DateTime | Última atualização                 |
 
 ### Status
 
@@ -234,7 +262,7 @@ A comunicação entre frontend e backend é realizada através de uma API REST.
 | PUT    | `/api/games/:id` | Atualiza um jogo |
 | DELETE | `/api/games/:id` | Exclui um jogo   |
 
-### Filtros
+#### Filtros
 
 Os filtros podem ser utilizados individualmente ou combinados.
 
@@ -260,6 +288,32 @@ Também é possível combinar parâmetros:
 GET /api/games?status=PLAYING&platformId=1&genreId=2
 ```
 
+### Platforms
+
+| Método | Endpoint              | Descrição             |
+| ------ | --------------------- | --------------------- |
+| GET    | `/api/platforms`      | Lista as plataformas  |
+| GET    | `/api/platforms/:id`  | Busca uma plataforma  |
+| POST   | `/api/platforms`      | Cria uma plataforma   |
+| PUT    | `/api/platforms/:id`  | Atualiza uma plataforma |
+| DELETE | `/api/platforms/:id`  | Exclui uma plataforma |
+
+### Genres
+
+| Método | Endpoint           | Descrição          |
+| ------ | ------------------ | ------------------ |
+| GET    | `/api/genres`      | Lista os gêneros   |
+| GET    | `/api/genres/:id`  | Busca um gênero    |
+| POST   | `/api/genres`      | Cria um gênero     |
+| PUT    | `/api/genres/:id`  | Atualiza um gênero |
+| DELETE | `/api/genres/:id`  | Exclui um gênero   |
+
+### Health Check
+
+```http
+GET /api/health
+```
+
 ---
 
 ## 🚀 Como executar
@@ -268,26 +322,25 @@ GET /api/games?status=PLAYING&platformId=1&genreId=2
 
 * Node.js
 * npm
-* PostgreSQL
+* Docker (recomendado para o PostgreSQL)
 
-### Backend
+### 1. Banco de dados
 
-Entre na pasta:
+```bash
+docker-compose up -d
+```
+
+### 2. Backend
 
 ```bash
 cd backend
-```
-
-Instale as dependências:
-
-```bash
 npm install
 ```
 
 Configure o arquivo `.env`:
 
 ```env
-DATABASE_URL="sua_connection_string"
+DATABASE_URL="postgresql://gameshelf:gameshelf@localhost:5432/gameshelf"
 ```
 
 Execute as migrations:
@@ -302,17 +355,12 @@ Inicie o servidor:
 npm run dev
 ```
 
-### Frontend
+### 3. Frontend
 
 Em outro terminal:
 
 ```bash
 cd frontend
-```
-
-Instale as dependências:
-
-```bash
 npm install
 ```
 
@@ -350,8 +398,8 @@ npm run dev
 * [x] Tema claro e escuro
 * [x] Responsividade
 * [x] Testes manuais
-* [ ] Screenshots
-* [ ] Demo
+* [x] Screenshots
+* [x] Demo
 * [ ] Deploy
 
 ### V2 — Expansão
@@ -360,7 +408,7 @@ npm run dev
 * [ ] Usuários
 * [ ] Wishlist avançada
 * [ ] Reviews
-* [ ] Dashboard
+* [ ] Dashboard avançado
 * [ ] Estatísticas avançadas
 * [ ] Integração com IGDB
 * [ ] Integração com SteamGridDB
@@ -400,16 +448,17 @@ Durante o desenvolvimento do GameShelf foram trabalhados conceitos como:
 * Integração frontend/backend
 * Git e GitHub
 * Design responsivo
+* Tema claro e escuro
 
 ---
 
 ## 📌 Status
 
-🚧 **V1 em finalização**
+✅ **V1 pronta para deploy**
 
-O núcleo funcional da V1 está concluído, incluindo backend, frontend, CRUDs, filtros, redesign, responsividade e testes manuais.
+O núcleo funcional da V1 está concluído, incluindo backend, frontend, CRUDs, filtros, redesign, responsividade, testes manuais, screenshots e demo.
 
-Os próximos passos são documentação visual, demonstração e deploy da aplicação.
+O próximo passo é o deploy da aplicação.
 
 ---
 
@@ -424,3 +473,4 @@ Projeto desenvolvido para estudos e portfólio na área de desenvolvimento de so
 ## 📄 Licença
 
 Este projeto está em desenvolvimento para fins de estudo e portfólio.
+```
