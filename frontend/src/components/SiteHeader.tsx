@@ -1,22 +1,15 @@
 import { Link } from "@tanstack/react-router";
-import { Library, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Logo } from "./Logo";
 
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-3">
         <Link to="/" className="flex items-center gap-2">
-          <div className="flex items-center">
-            <img
-              src="/logo.svg"
-              alt="GameShelf Logo"
-              width={40}
-              height={40}
-              className="block"
-            />
-          </div>
+          <Logo className="h-10 w-10" />
           <span className="font-display text-lg font-bold tracking-tight">
             Game<span className="text-primary">Shelf</span>
           </span>
