@@ -9,7 +9,14 @@ export function SiteHeader() {
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-3">
         <Link to="/" className="flex items-center gap-2">
           <div className="flex items-center">
-            <img src="/logo.svg" alt="GameShelf Logo" className="h-10 w-auto" />          </div>
+            <img
+              src="/logo.svg"
+              alt="GameShelf Logo"
+              width={40}
+              height={40}
+              className="block"
+            />
+          </div>
           <span className="font-display text-lg font-bold tracking-tight">
             Game<span className="text-primary">Shelf</span>
           </span>
