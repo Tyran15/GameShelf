@@ -1,5 +1,7 @@
 # 🎮 GameShelf
 
+[![Deploy](https://img.shields.io/badge/🚀_Ver_online-game--shelf--smoky.vercel.app-06b6d4?style=for-the-badge)](https://game-shelf-smoky.vercel.app/)
+
 > Uma biblioteca pessoal para organizar, acompanhar e avaliar sua coleção de jogos.
 
 ## 📌 Sobre o projeto
@@ -454,11 +456,14 @@ Durante o desenvolvimento do GameShelf foram trabalhados conceitos como:
 
 ## 📌 Status
 
-✅ **V1 pronta para deploy**
+✅ **V1 online**
 
-O núcleo funcional da V1 está concluído, incluindo backend, frontend, CRUDs, filtros, redesign, responsividade, testes manuais, screenshots e demo.
+🌐 Aplicação disponível em: **https://game-shelf-smoky.vercel.app/**
 
-O próximo passo é o deploy da aplicação.
+Stack de deploy:
+- **Frontend:** Vercel
+- **Backend:** Render
+- **Banco:** Neon (PostgreSQL)
 
 ---
 
