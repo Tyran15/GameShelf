@@ -34,18 +34,23 @@ type FormState = {
 };
 
 function initialState(game?: Game): FormState {
+  const status = game?.status ?? "WISHLIST";
+  const isWishlist = status === "WISHLIST";
+
   return {
     title: game?.title ?? "",
     description: game?.description ?? "",
     coverUrl: game?.coverUrl ?? "",
     releaseDate: game?.releaseDate ? game.releaseDate.slice(0, 10) : "",
-    status: game?.status ?? "WISHLIST",
-    rating:
-      game?.rating !== null && game?.rating !== undefined
+    status,
+    rating: isWishlist
+      ? ""
+      : game?.rating !== null && game?.rating !== undefined
         ? String(game.rating)
         : "",
-    hoursPlayed:
-      game?.hoursPlayed !== null && game?.hoursPlayed !== undefined
+    hoursPlayed: isWishlist
+      ? ""
+      : game?.hoursPlayed !== null && game?.hoursPlayed !== undefined
         ? String(game.hoursPlayed)
         : "",
     platformId: game ? String(game.platformId) : "",
@@ -99,13 +104,23 @@ export function GameForm({
     (g) => String(g.id) === form.genreId
   );
   const statusLabel = GAME_STATUS_LABELS[form.status];
+  const isWishlist = form.status === "WISHLIST";
 
   const ratingDisplay =
-    form.rating !== ""
+    !isWishlist && form.rating !== ""
       ? Number(form.rating) === 10
         ? "10"
         : Number(form.rating).toFixed(1)
       : null;
+
+  function handleStatusChange(newStatus: GameStatus) {
+    setForm((prev) => {
+      if (newStatus === "WISHLIST") {
+        return { ...prev, status: newStatus, rating: "", hoursPlayed: "" };
+      }
+      return { ...prev, status: newStatus };
+    });
+  }
 
   function handleRatingChange(raw: string) {
     if (raw === "") {
@@ -144,7 +159,8 @@ export function GameForm({
     if (!form.title.trim()) errors.title = "Informe o título do jogo.";
     if (!form.platformId) errors.platformId = "Selecione uma plataforma.";
     if (!form.genreId) errors.genreId = "Selecione um gênero.";
-    if (form.rating !== "") {
+
+    if (!isWishlist && form.rating !== "") {
       const value = Number(form.rating);
       if (Number.isNaN(value) || value < 0 || value > 10) {
         errors.rating = "A nota deve ser entre 0 e 10.";
@@ -152,12 +168,14 @@ export function GameForm({
         errors.rating = "Use apenas uma casa decimal (ex.: 7.4).";
       }
     }
-    if (form.hoursPlayed !== "") {
+
+    if (!isWishlist && form.hoursPlayed !== "") {
       const value = parseDecimal(form.hoursPlayed);
       if (value === null || value < 0) {
         errors.hoursPlayed = "Informe um valor válido (0 ou mais).";
       }
     }
+
     setLocalErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
@@ -171,8 +189,14 @@ export function GameForm({
     if (form.coverUrl.trim()) payload.coverUrl = form.coverUrl.trim();
     if (form.releaseDate)
       payload.releaseDate = `${form.releaseDate}T00:00:00.000Z`;
-    if (form.rating !== "") payload.rating = Number(form.rating);
-    payload.hoursPlayed = parseDecimal(form.hoursPlayed);
+
+    if (isWishlist) {
+      payload.rating = null;
+      payload.hoursPlayed = null;
+    } else {
+      if (form.rating !== "") payload.rating = Number(form.rating);
+      payload.hoursPlayed = parseDecimal(form.hoursPlayed);
+    }
 
     onSubmit(payload);
   }
@@ -182,7 +206,6 @@ export function GameForm({
       onSubmit={handleSubmit}
       className="grid gap-6 lg:grid-cols-[220px_minmax(0,33vw)] lg:items-start"
     >
-      {/* ----- Card de pré-visualização ----- */}
       <aside className="mx-auto w-full max-w-[220px] lg:mx-0">
         <div className="lg:sticky lg:top-6">
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -197,7 +220,7 @@ export function GameForm({
                     src={form.coverUrl.trim()}
                     alt=""
                     aria-hidden="true"
-                    className="absolute inset-0 size-full scale-110 object-cover blur-xl opacity-60"
+                    className="absolute inset-0 size-full scale-110 object-cover blur-xl opacity-70"
                   />
                   <img
                     src={form.coverUrl.trim()}
@@ -253,9 +276,7 @@ export function GameForm({
         </div>
       </aside>
 
-      {/* ----- Campos do formulário ----- */}
       <div className="grid w-full gap-4 rounded-2xl border border-border bg-surface p-5 shadow-card md:p-6">
-        {/* Título */}
         <div className="grid gap-2">
           <Label htmlFor="title" className="text-sm">
             Título *
@@ -270,7 +291,6 @@ export function GameForm({
           <FieldError message={errorFor("title")} />
         </div>
 
-        {/* Descrição */}
         <div className="grid gap-2">
           <Label htmlFor="description" className="text-sm">
             Descrição
@@ -286,7 +306,6 @@ export function GameForm({
           <FieldError message={errorFor("description")} />
         </div>
 
-        {/* URL da capa + Data de lançamento */}
         <div className="grid gap-5 md:grid-cols-2">
           <div className="grid gap-2">
             <Label htmlFor="coverUrl" className="text-sm">
@@ -317,15 +336,16 @@ export function GameForm({
           </div>
         </div>
 
-        {/* Status + Nota + Horas jogadas (3 colunas em md+) */}
-        <div className="grid gap-5 md:grid-cols-3">
+        <div
+          className={`grid gap-5 ${isWishlist ? "" : "md:grid-cols-3"}`}
+        >
           <div className="grid gap-2">
             <Label htmlFor="status" className="text-sm">
               Status
             </Label>
             <Select
               value={form.status}
-              onValueChange={(v) => set("status", v as GameStatus)}
+              onValueChange={(v) => handleStatusChange(v as GameStatus)}
             >
               <SelectTrigger id="status" className="h-11">
                 <SelectValue />
@@ -341,48 +361,51 @@ export function GameForm({
             <FieldError message={errorFor("status")} />
           </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="rating" className="text-sm">
-              Nota (0 a 10)
-            </Label>
-            <Input
-              id="rating"
-              type="text"
-              inputMode="decimal"
-              value={form.rating}
-              onChange={(e) => handleRatingChange(e.target.value)}
-              placeholder="Ex.: 7.4"
-              className="h-11"
-            />
-            <FieldError message={errorFor("rating")} />
-          </div>
+          {!isWishlist ? (
+            <>
+              <div className="grid gap-2">
+                <Label htmlFor="rating" className="text-sm">
+                  Nota (0 a 10)
+                </Label>
+                <Input
+                  id="rating"
+                  type="text"
+                  inputMode="decimal"
+                  value={form.rating}
+                  onChange={(e) => handleRatingChange(e.target.value)}
+                  placeholder="Ex.: 7.4"
+                  className="h-11"
+                />
+                <FieldError message={errorFor("rating")} />
+              </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="hoursPlayed" className="text-sm">
-              Horas jogadas
-            </Label>
-            <div className="relative">
-              <Input
-                id="hoursPlayed"
-                type="text"
-                inputMode="decimal"
-                value={form.hoursPlayed}
-                onChange={(e) => handleHoursPlayedChange(e.target.value)}
-                placeholder="Ex.: 42.5"
-                className="h-11 pr-9"
-              />
-              <span
-                aria-hidden="true"
-                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground"
-              >
-                h
-              </span>
-            </div>
-            <FieldError message={errorFor("hoursPlayed")} />
-          </div>
+              <div className="grid gap-2">
+                <Label htmlFor="hoursPlayed" className="text-sm">
+                  Horas jogadas
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="hoursPlayed"
+                    type="text"
+                    inputMode="decimal"
+                    value={form.hoursPlayed}
+                    onChange={(e) => handleHoursPlayedChange(e.target.value)}
+                    placeholder="Ex.: 42.5"
+                    className="h-11 pr-9"
+                  />
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground"
+                  >
+                    h
+                  </span>
+                </div>
+                <FieldError message={errorFor("hoursPlayed")} />
+              </div>
+            </>
+          ) : null}
         </div>
 
-        {/* Plataforma + Gênero */}
         <div className="grid gap-5 md:grid-cols-2">
           <div className="grid gap-2">
             <Label htmlFor="platformId" className="text-sm">
@@ -443,7 +466,6 @@ export function GameForm({
           </div>
         </div>
 
-        {/* Botões */}
         <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:justify-end">
           <Button
             type="button"
@@ -453,11 +475,7 @@ export function GameForm({
           >
             Cancelar
           </Button>
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="h-11 px-5"
-          >
+          <Button type="submit" disabled={isSubmitting} className="h-11 px-5">
             {isSubmitting ? (
               <Loader2 className="size-5 animate-spin" />
             ) : null}
@@ -471,7 +489,5 @@ export function GameForm({
 
 function FieldError({ message }: { message?: string | undefined }) {
   if (!message) return null;
-  return (
-    <p className="text-xs font-medium text-destructive">{message}</p>
-  );
+  return <p className="text-xs font-medium text-destructive">{message}</p>;
 }
