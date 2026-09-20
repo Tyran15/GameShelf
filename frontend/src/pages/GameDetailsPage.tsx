@@ -34,7 +34,6 @@ export function GameDetailsPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:py-8">
-      {/* Botão voltar */}
       <Button asChild variant="ghost" size="sm" className="mb-4 -ml-2">
         <Link to="/">
           <ArrowLeft className="size-4" />
@@ -42,39 +41,40 @@ export function GameDetailsPage() {
         </Link>
       </Button>
 
-      {/* Grid principal — AJUSTADO PARA TABLET */}
-      <div className="grid gap-6 md:grid-cols-[minmax(180px,220px)_1fr] lg:grid-cols-[240px_1fr] lg:gap-8">
-        {/* Coluna da capa */}
+      <div className="grid gap-6 md:grid-cols-[minmax(200px,280px)_1fr] lg:grid-cols-[340px_1fr] lg:gap-8">
         <div className="mx-auto w-full max-w-[200px] md:mx-0 md:max-w-none">
-          <div className="relative aspect-[2/3] overflow-hidden rounded-2xl bg-secondary">
-            {game.coverUrl ? (
-              <>
-                <img
-                  src={game.coverUrl}
-                  alt=""
-                  aria-hidden="true"
-                  className="absolute inset-0 size-full scale-110 object-cover blur-xl opacity-70"
-                />
-                <img
-                  src={game.coverUrl}
-                  alt={`Capa de ${game.title}`}
-                  className="relative size-full object-contain"
-                />
-              </>
-            ) : (
-              <div className="flex size-full items-center justify-center text-muted-foreground">
-                <Gamepad2 className="size-12" />
-              </div>
-            )}
+          <div className="relative">
+            <div className="relative aspect-[2/3] overflow-hidden rounded-2xl bg-secondary">
+              {game.coverUrl ? (
+                <>
+                  <img
+                    src={game.coverUrl}
+                    alt=""
+                    aria-hidden="true"
+                    className="absolute inset-0 size-full scale-110 object-cover blur-xl opacity-70"
+                  />
+                  <img
+                    src={game.coverUrl}
+                    alt={`Capa de ${game.title}`}
+                    className="relative size-full object-contain"
+                  />
+                </>
+              ) : (
+                <div className="flex size-full items-center justify-center text-muted-foreground">
+                  <Gamepad2 className="size-12" />
+                </div>
+              )}
+            </div>
+
+            <div className="pointer-events-none absolute left-2 top-2 z-10">
+              <StatusBadge status={game.status} />
+            </div>
           </div>
         </div>
 
-        {/* Coluna do conteúdo */}
         <div className="grid gap-5 sm:gap-6">
-          {/* Cabeçalho: badges + título + plataforma/gênero */}
           <div className="grid gap-3">
             <div className="flex flex-wrap items-center gap-2">
-              <StatusBadge status={game.status} />
               {game.rating !== null && game.rating !== undefined && (
                 <RatingPill rating={game.rating} />
               )}
@@ -89,7 +89,6 @@ export function GameDetailsPage() {
             </p>
           </div>
 
-          {/* Grid de metadata: 1 col mobile, 2 cols tablet+ */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
             <div className="rounded-xl border border-border bg-surface p-4">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -126,7 +125,6 @@ export function GameDetailsPage() {
             </div>
           </div>
 
-          {/* Descrição */}
           {game.description && (
             <div className="rounded-xl border border-border bg-surface p-4 sm:p-5">
               <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
@@ -138,7 +136,6 @@ export function GameDetailsPage() {
             </div>
           )}
 
-          {/* Botões de ação */}
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button asChild className="sm:w-auto">
               <Link to="/games/$id/edit" params={{ id: String(game.id) }}>
