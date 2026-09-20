@@ -1,7 +1,6 @@
 # 🎮 GameShelf
 
 [![CI](https://github.com/Tyran15/GameShelf/actions/workflows/ci.yml/badge.svg)](https://github.com/Tyran15/GameShelf/actions/workflows/ci.yml)
-
 [![Deploy](https://img.shields.io/badge/🚀_Ver_online-game--shelf--smoky.vercel.app-06b6d4?style=for-the-badge)](https://game-shelf-smoky.vercel.app/)
 
 > Uma biblioteca pessoal para organizar, acompanhar e avaliar sua coleção de jogos.
@@ -12,9 +11,11 @@ O **GameShelf** é uma aplicação web full stack desenvolvida para gerenciament
 
 A aplicação permite cadastrar, organizar, pesquisar e filtrar jogos por **plataforma, gênero e status**, além de acompanhar informações como avaliação, horas jogadas, data de lançamento e descrição.
 
-O projeto foi desenvolvido como um projeto de estudo e portfólio, com foco em **desenvolvimento Full Stack, APIs REST, integração entre frontend e backend, banco de dados relacional e boas práticas de organização de código**.
+O projeto foi desenvolvido como um projeto de estudo e portfólio, com foco em **desenvolvimento Full Stack, APIs REST, integração entre frontend e backend, banco de dados relacional, testes automatizados e boas práticas de organização de código**.
 
-**Repositório:** [https://github.com/Tyran15/GameShelf](https://github.com/Tyran15/GameShelf)
+**Demo:** https://game-shelf-smoky.vercel.app/
+
+**Repositório:** https://github.com/Tyran15/GameShelf
 
 ---
 
@@ -59,32 +60,46 @@ O projeto foi desenvolvido como um projeto de estudo e portfólio, com foco em *
 * [x] Interface para desktop, tablet e mobile
 * [x] Dashboard/home com estatísticas da biblioteca
 
+### 🧪 Qualidade
+
+* [x] Validação de dados com Zod
+* [x] Testes unitários com Vitest
+* [x] CI com GitHub Actions
+* [x] Tratamento de erros da API
+* [x] Health check da API
+
 ---
 
 ## 🎬 Demo
 
-![Criar jogo](docs/demos/demo.gif)
+![Criar jogo](docs/demos/create-game.gif)
 
 ---
 
 ## 🖼️ Screenshots
 
 ### Biblioteca (tema escuro)
-![Biblioteca - Tema Escuro](docs/screenshots/library.png)
+
+![Biblioteca - Tema Escuro](docs/screenshots/library-dark.png)
 
 ### Biblioteca (tema claro)
+
 ![Biblioteca - Tema Claro](docs/screenshots/library-light.png)
 
 ### Detalhes do jogo
+
 ![Detalhes do jogo](docs/screenshots/game-details.png)
 
 ### Formulário de jogo
+
 ![Formulário de jogo](docs/screenshots/game-form.png)
 
 ### Plataformas
+
 ![Plataformas](docs/screenshots/platforms.png)
 
 ### Gêneros
+
 ![Gêneros](docs/screenshots/genres.png)
 
 ---
@@ -93,26 +108,40 @@ O projeto foi desenvolvido como um projeto de estudo e portfólio, com foco em *
 
 ### Frontend
 
-* React
+* React 19
 * TypeScript
 * TanStack Start
 * TanStack Router
 * TanStack Query
-* Tailwind CSS
+* Tailwind CSS 4
 * shadcn/ui
 * Vite
 
 ### Backend
 
 * Node.js
-* Express
+* Express 5
 * TypeScript
 * Prisma ORM
 * Zod
 
 ### Banco de dados
 
-* PostgreSQL
+* PostgreSQL 17
+
+### Testes
+
+* Vitest
+
+### CI/CD
+
+* GitHub Actions
+
+### Deploy
+
+* Vercel — Frontend
+* Render — Backend
+* Neon — PostgreSQL
 
 ### Ferramentas
 
@@ -168,8 +197,7 @@ gameshelf/
 │   │
 │   ├── prisma/
 │   │   ├── migrations/
-│   │   ├── schema.prisma
-│   │   └── seed.ts
+│   │   └── schema.prisma
 │   │
 │   ├── package.json
 │   └── tsconfig.json
@@ -198,6 +226,10 @@ gameshelf/
 │       ├── platforms.png
 │       └── genres.png
 │
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+│
 ├── docker-compose.yml
 ├── README.md
 └── .gitignore
@@ -225,20 +257,20 @@ Platform
 
 ### Game
 
-| Campo       | Tipo     | Descrição                          |
-| ----------- | -------- | ---------------------------------- |
-| id          | Integer  | Identificador                      |
-| title       | String   | Nome do jogo                       |
-| description | String   | Descrição                          |
-| coverUrl    | String   | URL da capa                        |
-| releaseDate | DateTime | Data de lançamento                 |
-| status      | Enum     | Status do jogo                     |
-| rating      | Float    | Avaliação pessoal (0 a 10)         |
-| hoursPlayed | Float    | Horas jogadas                      |
-| platformId  | Integer  | Plataforma                         |
-| genreId     | Integer  | Gênero                             |
-| createdAt   | DateTime | Data de criação                    |
-| updatedAt   | DateTime | Última atualização                 |
+| Campo         | Tipo     | Descrição                  |
+| ------------- | -------- | -------------------------- |
+| `id`          | Integer  | Identificador              |
+| `title`       | String   | Nome do jogo               |
+| `description` | String   | Descrição                  |
+| `coverUrl`    | String   | URL da capa                |
+| `releaseDate` | DateTime | Data de lançamento         |
+| `status`      | Enum     | Status do jogo             |
+| `rating`      | Float    | Avaliação pessoal (0 a 10) |
+| `hoursPlayed` | Float    | Horas jogadas              |
+| `platformId`  | Integer  | Plataforma                 |
+| `genreId`     | Integer  | Gênero                     |
+| `createdAt`   | DateTime | Data de criação            |
+| `updatedAt`   | DateTime | Última atualização         |
 
 ### Status
 
@@ -266,7 +298,7 @@ A comunicação entre frontend e backend é realizada através de uma API REST.
 | PUT    | `/api/games/:id` | Atualiza um jogo |
 | DELETE | `/api/games/:id` | Exclui um jogo   |
 
-#### Filtros
+### Filtros
 
 Os filtros podem ser utilizados individualmente ou combinados.
 
@@ -294,29 +326,69 @@ GET /api/games?status=PLAYING&platformId=1&genreId=2
 
 ### Platforms
 
-| Método | Endpoint              | Descrição             |
-| ------ | --------------------- | --------------------- |
-| GET    | `/api/platforms`      | Lista as plataformas  |
-| GET    | `/api/platforms/:id`  | Busca uma plataforma  |
-| POST   | `/api/platforms`      | Cria uma plataforma   |
-| PUT    | `/api/platforms/:id`  | Atualiza uma plataforma |
-| DELETE | `/api/platforms/:id`  | Exclui uma plataforma |
+| Método | Endpoint             | Descrição               |
+| ------ | -------------------- | ----------------------- |
+| GET    | `/api/platforms`     | Lista as plataformas    |
+| GET    | `/api/platforms/:id` | Busca uma plataforma    |
+| POST   | `/api/platforms`     | Cria uma plataforma     |
+| PUT    | `/api/platforms/:id` | Atualiza uma plataforma |
+| DELETE | `/api/platforms/:id` | Exclui uma plataforma   |
 
 ### Genres
 
-| Método | Endpoint           | Descrição          |
-| ------ | ------------------ | ------------------ |
-| GET    | `/api/genres`      | Lista os gêneros   |
-| GET    | `/api/genres/:id`  | Busca um gênero    |
-| POST   | `/api/genres`      | Cria um gênero     |
-| PUT    | `/api/genres/:id`  | Atualiza um gênero |
-| DELETE | `/api/genres/:id`  | Exclui um gênero   |
+| Método | Endpoint          | Descrição          |
+| ------ | ----------------- | ------------------ |
+| GET    | `/api/genres`     | Lista os gêneros   |
+| GET    | `/api/genres/:id` | Busca um gênero    |
+| POST   | `/api/genres`     | Cria um gênero     |
+| PUT    | `/api/genres/:id` | Atualiza um gênero |
+| DELETE | `/api/genres/:id` | Exclui um gênero   |
 
 ### Health Check
 
 ```http
 GET /api/health
 ```
+
+---
+
+## 🧪 Testes
+
+O projeto utiliza **Vitest** para testes unitários.
+
+Atualmente existem **50 testes automatizados**:
+
+| Módulo            | Testes |
+| ----------------- | -----: |
+| `game.schema`     |     14 |
+| `game.service`    |     14 |
+| `platform.schema` |     11 |
+| `genre.schema`    |     11 |
+| **Total**         | **50** |
+
+Os testes cobrem principalmente regras de validação e comportamento dos serviços do backend.
+
+---
+
+## ⚙️ Integração Contínua
+
+O projeto utiliza **GitHub Actions** para executar automaticamente a suíte de testes através do workflow:
+
+```text
+Push / Pull Request
+        ↓
+GitHub Actions
+        ↓
+Instalação das dependências
+        ↓
+Execução dos testes
+        ↓
+✓ CI aprovado
+```
+
+Workflow:
+
+`.github/workflows/ci.yml`
 
 ---
 
@@ -402,18 +474,21 @@ npm run dev
 * [x] Tema claro e escuro
 * [x] Responsividade
 * [x] Testes manuais
+* [x] Testes unitários
+* [x] CI com GitHub Actions
 * [x] Screenshots
 * [x] Demo
 * [x] Deploy
+* [x] Release `v1.0.0`
 
 ### V2 — Expansão
 
 * [ ] Autenticação
 * [ ] Usuários
+* [ ] Multiusuário
 * [ ] Wishlist avançada
 * [ ] Reviews
-* [ ] Dashboard avançado
-* [ ] Estatísticas avançadas
+* [ ] Dashboard e estatísticas avançadas
 * [ ] Integração com IGDB
 * [ ] Integração com SteamGridDB
 * [ ] Integração com Steam
@@ -444,6 +519,8 @@ Durante o desenvolvimento do GameShelf foram trabalhados conceitos como:
 * PostgreSQL
 * Prisma ORM
 * Zod
+* Vitest
+* GitHub Actions
 * TanStack Query
 * Relacionamentos entre tabelas
 * Validação de dados
@@ -453,19 +530,27 @@ Durante o desenvolvimento do GameShelf foram trabalhados conceitos como:
 * Git e GitHub
 * Design responsivo
 * Tema claro e escuro
+* Deploy em produção
 
 ---
 
 ## 📌 Status
 
-✅ **V1 online**
+### ✅ V1.0.0 — Lançada
 
-🌐 Aplicação disponível em: **https://game-shelf-smoky.vercel.app/**
+O **GameShelf V1** está disponível em produção.
 
-Stack de deploy:
-- **Frontend:** Vercel
-- **Backend:** Render
-- **Banco:** Neon (PostgreSQL)
+**Stack de deploy:**
+
+* **Frontend:** Vercel
+* **Backend:** Render
+* **Banco:** Neon (PostgreSQL)
+
+A versão `v1.0.0` inclui CRUD completo, filtros, busca, dashboard, interface responsiva, temas claro/escuro, testes unitários, CI e documentação com screenshots e demonstração em GIF.
+
+🌐 **Aplicação:** https://game-shelf-smoky.vercel.app/
+
+📦 **Repositório:** https://github.com/Tyran15/GameShelf
 
 ---
 
@@ -479,5 +564,4 @@ Projeto desenvolvido para estudos e portfólio na área de desenvolvimento de so
 
 ## 📄 Licença
 
-Este projeto está em desenvolvimento para fins de estudo e portfólio.
-```
+Este projeto foi desenvolvido para fins de estudo e portfólio.
