@@ -8,7 +8,7 @@ on:
 
 jobs:
   backend:
-    name: Backend (build)
+    name: Backend (test + build)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -27,10 +27,16 @@ jobs:
           cache-dependency-path: backend/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --include=dev
 
       - name: Generate Prisma Client
         run: npx prisma generate
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Run tests
+        run: npm test
 
       - name: Build
         run: npm run build
@@ -41,6 +47,8 @@ jobs:
     defaults:
       run:
         working-directory: frontend
+    env:
+      VITE_API_URL: "https://gameshelf-backend-qt9v.onrender.com"
 
     steps:
       - uses: actions/checkout@v4
@@ -53,7 +61,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --include=dev
 
       - name: Build
         run: npm run build
