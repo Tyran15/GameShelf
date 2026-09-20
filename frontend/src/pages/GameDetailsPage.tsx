@@ -1,13 +1,27 @@
-import { Link, useParams } from "@tanstack/react-router";
-import { ArrowLeft, Calendar, Clock, Gamepad2, Pencil, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { Link, useNavigate, useParams } from "@tanstack/react-router";
+import {
+  ArrowLeft,
+  Calendar,
+  Clock,
+  Gamepad2,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DeleteGameDialog } from "@/components/DeleteGameDialog";
 import { RatingPill } from "@/components/RatingPill";
 import { StatusBadge } from "@/components/StatusBadge";
-import { useGame } from "@/hooks/useGames";
+import { useDeleteGame, useGame } from "@/hooks/useGames";
 
 export function GameDetailsPage() {
   const { id } = useParams({ from: "/games/$id/" });
+  const navigate = useNavigate();
   const { data: game, isLoading, isError } = useGame(Number(id));
+  const deleteMutation = useDeleteGame();
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -31,6 +45,29 @@ export function GameDetailsPage() {
   const releaseDate = game.releaseDate
     ? new Date(game.releaseDate).toLocaleDateString("pt-BR")
     : "—";
+
+  function handleOpenDialog() {
+    setErrorMessage(null);
+    setDialogOpen(true);
+  }
+
+  function handleConfirmDelete() {
+    if (!game) return;
+
+    setErrorMessage(null);
+
+    deleteMutation.mutate(game.id, {
+      onSuccess: () => {
+        setDialogOpen(false);
+        navigate({ to: "/" });
+      },
+      onError: (error) => {
+        setErrorMessage(
+          error instanceof Error ? error.message : "Erro ao excluir o jogo."
+        );
+      },
+    });
+  }
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:py-8">
@@ -143,13 +180,27 @@ export function GameDetailsPage() {
                 Editar
               </Link>
             </Button>
-            <Button variant="outline" className="sm:w-auto">
+            <Button
+              type="button"
+              variant="outline"
+              className="sm:w-auto"
+              onClick={handleOpenDialog}
+            >
               <Trash2 className="size-4" />
               Excluir
             </Button>
           </div>
         </div>
       </div>
+
+      <DeleteGameDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        gameTitle={game.title}
+        isPending={deleteMutation.isPending}
+        error={errorMessage}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }
