@@ -402,7 +402,7 @@ npm run dev
 * [x] Testes manuais
 * [x] Screenshots
 * [x] Demo
-* [ ] Deploy
+* [x] Deploy
 
 ### V2 — Expansão
 

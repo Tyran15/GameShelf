@@ -1,86 +1,59 @@
-import { useState } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Calendar, Clock, Gamepad2, Loader2, Pencil, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { Link, useParams } from "@tanstack/react-router";
+import { ArrowLeft, Calendar, Clock, Gamepad2, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { ErrorState } from "@/components/ErrorState";
 import { RatingPill } from "@/components/RatingPill";
 import { StatusBadge } from "@/components/StatusBadge";
-import { useDeleteGame, useGame } from "@/hooks/useGames";
-import { ApiError } from "@/services/api";
+import { useGame } from "@/hooks/useGames";
 
-function formatDate(value: string | null) {
-  if (!value) return "Não informada";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Não informada";
-  return date.toLocaleDateString("pt-BR", { timeZone: "UTC" });
-}
-
-export function GameDetailsPage({ id }: { id: number }) {
-  const navigate = useNavigate();
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const { data: game, isLoading, isError, error, refetch } = useGame(id);
-  const deleteGame = useDeleteGame();
+export function GameDetailsPage() {
+  const { id } = useParams({ from: "/games/$id/" });
+  const { data: game, isLoading, isError } = useGame(Number(id));
 
   if (isLoading) {
     return (
-      <div className="page-shell flex justify-center py-24">
-        <Loader2 className="size-6 animate-spin text-primary" />
+      <div className="mx-auto w-full max-w-6xl px-4 py-8">
+        <p className="text-muted-foreground">Carregando...</p>
       </div>
     );
   }
 
   if (isError || !game) {
-    const notFound = error instanceof ApiError && error.status === 404;
     return (
-      <div className="page-shell space-y-4">
-        <BackLink />
-        <ErrorState
-          error={notFound ? new Error("Jogo não encontrado.") : error}
-          onRetry={notFound ? undefined : () => refetch()}
-        />
+      <div className="mx-auto w-full max-w-6xl px-4 py-8">
+        <p className="text-destructive">Jogo não encontrado.</p>
+        <Button asChild variant="outline" className="mt-4">
+          <Link to="/">Voltar para a biblioteca</Link>
+        </Button>
       </div>
     );
   }
 
-  function handleDelete() {
-    deleteGame.mutate(game!.id, {
-      onSuccess: () => {
-        toast.success("Jogo excluído da sua biblioteca.");
-        setConfirmOpen(false);
-        navigate({ to: "/" });
-      },
-      onError: (err) =>
-        toast.error(
-          err instanceof Error ? err.message : "Não foi possível excluir.",
-        ),
-    });
-  }
+  const releaseDate = game.releaseDate
+    ? new Date(game.releaseDate).toLocaleDateString("pt-BR")
+    : "—";
 
   return (
-    <div className="page-shell space-y-6">
-      <BackLink />
+    <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:py-8">
+      {/* Botão voltar */}
+      <Button asChild variant="ghost" size="sm" className="mb-4 -ml-2">
+        <Link to="/">
+          <ArrowLeft className="size-4" />
+          Voltar para a biblioteca
+        </Link>
+      </Button>
 
-      <div className="grid gap-8 md:grid-cols-[300px_1fr]">
-        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-card">
-          <div className="relative aspect-[2/3] bg-secondary">
+      {/* Grid principal — AJUSTADO PARA TABLET */}
+      <div className="grid gap-6 md:grid-cols-[minmax(180px,220px)_1fr] lg:grid-cols-[240px_1fr] lg:gap-8">
+        {/* Coluna da capa */}
+        <div className="mx-auto w-full max-w-[200px] md:mx-0 md:max-w-none">
+          <div className="relative aspect-[2/3] overflow-hidden rounded-2xl bg-secondary">
             {game.coverUrl ? (
               <>
                 <img
                   src={game.coverUrl}
                   alt=""
                   aria-hidden="true"
-                  className="absolute inset-0 size-full scale-110 object-cover blur-2xl opacity-50"
+                  className="absolute inset-0 size-full scale-110 object-cover blur-xl opacity-70"
                 />
                 <img
                   src={game.coverUrl}
@@ -96,122 +69,90 @@ export function GameDetailsPage({ id }: { id: number }) {
           </div>
         </div>
 
-        <div className="space-y-6">
-          <div className="space-y-3">
+        {/* Coluna do conteúdo */}
+        <div className="grid gap-5 sm:gap-6">
+          {/* Cabeçalho: badges + título + plataforma/gênero */}
+          <div className="grid gap-3">
             <div className="flex flex-wrap items-center gap-2">
               <StatusBadge status={game.status} />
-              <RatingPill rating={game.rating} />
+              {game.rating !== null && game.rating !== undefined && (
+                <RatingPill rating={game.rating} />
+              )}
             </div>
-            <h1 className="text-3xl font-bold sm:text-4xl">{game.title}</h1>
-            <p className="text-sm text-muted-foreground">
-              {game.platform?.name} · {game.genre?.name}
+
+            <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
+              {game.title}
+            </h1>
+
+            <p className="text-sm text-muted-foreground sm:text-base">
+              {game.platform.name} · {game.genre.name}
             </p>
           </div>
 
-          <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <InfoBlock label="Plataforma" value={game.platform?.name ?? "—"} />
-            <InfoBlock label="Gênero" value={game.genre?.name ?? "—"} />
-            <InfoBlock
-              label="Lançamento"
-              value={formatDate(game.releaseDate)}
-              icon={<Calendar className="size-3.5" />}
-            />
-            <InfoBlock
-              label="Horas jogadas"
-              value={
-                game.hoursPlayed !== null && game.hoursPlayed !== undefined
+          {/* Grid de metadata: 1 col mobile, 2 cols tablet+ */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+            <div className="rounded-xl border border-border bg-surface p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Plataforma
+              </p>
+              <p className="mt-1 font-medium">{game.platform.name}</p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-surface p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Gênero
+              </p>
+              <p className="mt-1 font-medium">{game.genre.name}</p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-surface p-4">
+              <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <Calendar className="size-3.5" />
+                Lançamento
+              </p>
+              <p className="mt-1 font-medium">{releaseDate}</p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-surface p-4">
+              <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <Clock className="size-3.5" />
+                Horas jogadas
+              </p>
+              <p className="mt-1 font-medium">
+                {game.hoursPlayed !== null && game.hoursPlayed !== undefined
                   ? `${game.hoursPlayed}h`
-                  : "—"
-              }
-              icon={<Clock className="size-3.5" />}
-            />
-          </dl>
-
-          <div className="rounded-xl border border-border bg-surface p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              Descrição
-            </h2>
-            <p className="mt-2 whitespace-pre-line text-sm leading-relaxed">
-              {game.description?.trim()
-                ? game.description
-                : "Nenhuma descrição cadastrada."}
-            </p>
+                  : "—"}
+              </p>
+            </div>
           </div>
 
+          {/* Descrição */}
+          {game.description && (
+            <div className="rounded-xl border border-border bg-surface p-4 sm:p-5">
+              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                Descrição
+              </h2>
+              <p className="whitespace-pre-line text-sm leading-relaxed sm:text-base">
+                {game.description}
+              </p>
+            </div>
+          )}
+
+          {/* Botões de ação */}
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button asChild>
+            <Button asChild className="sm:w-auto">
               <Link to="/games/$id/edit" params={{ id: String(game.id) }}>
                 <Pencil className="size-4" />
                 Editar
               </Link>
             </Button>
-            <Button variant="outline" onClick={() => setConfirmOpen(true)}>
+            <Button variant="outline" className="sm:w-auto">
               <Trash2 className="size-4" />
               Excluir
             </Button>
           </div>
         </div>
       </div>
-
-      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir “{game.title}”?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta ação remove o jogo da sua biblioteca e não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteGame.isPending}>
-              Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(event) => {
-                event.preventDefault();
-                handleDelete();
-              }}
-              disabled={deleteGame.isPending}
-            >
-              {deleteGame.isPending ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : null}
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  );
-}
-
-function BackLink() {
-  return (
-    <Link
-      to="/"
-      className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-    >
-      <ArrowLeft className="size-4" />
-      Voltar para a biblioteca
-    </Link>
-  );
-}
-
-function InfoBlock({
-  label,
-  value,
-  icon,
-}: {
-  label: string;
-  value: string;
-  icon?: React.ReactNode | undefined;
-}) {
-  return (
-    <div className="rounded-lg border border-border bg-surface p-4">
-      <dt className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-muted-foreground">
-        {icon}
-        {label}
-      </dt>
-      <dd className="mt-1 text-sm font-medium">{value}</dd>
     </div>
   );
 }
