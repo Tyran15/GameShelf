@@ -1,6 +1,7 @@
 # 🎮 GameShelf
 
 [![Deploy](https://img.shields.io/badge/🚀_Ver_online-game--shelf--smoky.vercel.app-06b6d4?style=for-the-badge)](https://game-shelf-smoky.vercel.app/)
+
 [![CI](https://github.com/Tyran15/GameShelf/actions/workflows/ci.yml/badge.svg)](https://github.com/Tyran15/GameShelf/actions/workflows/ci.yml)
 
 > Uma biblioteca pessoal para organizar, acompanhar e avaliar sua coleção de jogos.
