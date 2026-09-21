@@ -81,7 +81,7 @@ O projeto foi desenvolvido como um projeto de estudo e portfólio, com foco em *
 
 ### Biblioteca (tema escuro)
 
-![Biblioteca - Tema Escuro](docs/screenshots/library-dark.png)
+![Biblioteca - Tema Escuro](docs/screenshots/library.png)
 
 ### Biblioteca (tema claro)
 
