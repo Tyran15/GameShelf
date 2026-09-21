@@ -86,7 +86,7 @@ O projeto foi desenvolvido como um projeto de estudo e portfólio, com foco em *
 
 ## 🎬 Demo
 
-![Criar jogo](docs/demos/create-game.gif)
+![Criar jogo](docs/demos/demo.gif)
 
 ---
 
