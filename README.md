@@ -1,10 +1,23 @@
-# 🎮 GameShelf
+<p align="center">
+  <img src="docs/logo.png" alt="GameShelf" width="140" />
+</p>
 
-[![Deploy](https://img.shields.io/badge/🚀_Ver_online-game--shelf--smoky.vercel.app-06b6d4?style=for-the-badge)](https://game-shelf-smoky.vercel.app/)
+<h1 align="center">GameShelf</h1>
 
-[![CI](https://github.com/Tyran15/GameShelf/actions/workflows/ci.yml/badge.svg)](https://github.com/Tyran15/GameShelf/actions/workflows/ci.yml)
+<p align="center"> coleção de jogos.
+</p>
 
-> Uma biblioteca pessoal para organizar, acompanhar e avaliar sua coleção de jogos.
+<p align="center">
+  <a href="https://game-shelf-smoky.vercel.app/">
+    <img src="https://img.shields.io/badge/🚀_Ver_online-game--shelf--smoky.vercel.app-06b6d4?style=for-the-badge" />
+  </a>
+  <br>
+  <a href="https://github.com/Tyran15/GameShelf/actions/workflows/ci.yml">
+    <img src="https://github.com/Tyran15/GameShelf/actions/workflows/ci.yml/badge.svg" />
+  </a>
+</p>
+
+---
 
 ## 📌 Sobre o projeto
 
