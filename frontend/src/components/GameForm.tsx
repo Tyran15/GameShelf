@@ -107,7 +107,6 @@ export function GameForm({
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
-  // Quando os detalhes da RAWG chegam, preenche descrição e sincroniza demais campos
   useEffect(() => {
     if (!rawgDetails.data?.game) return;
 
@@ -127,7 +126,6 @@ export function GameForm({
   }, [rawgDetails.data]);
 
   function handleRawgSelect(rawgGame: RawgGame) {
-    // Preenche imediatamente com dados da busca (UX rápida)
     setForm((prev) => ({
       ...prev,
       title: rawgGame.title,
@@ -137,7 +135,6 @@ export function GameForm({
         : prev.releaseDate,
     }));
 
-    // Guarda as sugestões pra filtrar os selects
     if (rawgGame.platforms.length > 0 || rawgGame.genres.length > 0) {
       setRawgSuggestions({
         platforms: rawgGame.platforms,
@@ -145,7 +142,6 @@ export function GameForm({
       });
     }
 
-    // Dispara busca de detalhes em background (traz descrição)
     setSelectedRawgId(rawgGame.rawgId);
   }
 
@@ -168,52 +164,54 @@ export function GameForm({
     );
   }, [rawgSuggestions, allPlatforms]);
 
-  const filteredGenres = useMemo(() => {
-    if (!rawgSuggestions) return allGenres;
-    return allGenres.filter((g) =>
-      rawgSuggestions.genres.some(
-        (name) => normalizeName(name) === normalizeName(g.name)
-      )
-    );
-  }, [rawgSuggestions, allGenres]);
-
-  // Fallback: se nenhuma sugestão bateu com o banco, mostra todas
   const platformsHadNoMatch =
     rawgSuggestions !== null &&
     rawgSuggestions.platforms.length > 0 &&
     filteredPlatforms.length === 0;
 
-  const genresHadNoMatch =
-    rawgSuggestions !== null &&
-    rawgSuggestions.genres.length > 0 &&
-    filteredGenres.length === 0;
-
   const visiblePlatforms = platformsHadNoMatch ? allPlatforms : filteredPlatforms;
-  const visibleGenres = genresHadNoMatch ? allGenres : filteredGenres;
 
-  // Auto-seleciona quando só há 1 opção compatível
+  // Auto-seleciona a primeira plataforma compatível quando há sugestões
   useEffect(() => {
-    if (!rawgSuggestions) return;
-    if (filteredPlatforms.length === 1 && !form.platformId) {
+    if (!rawgSuggestions || form.platformId) return;
+    if (filteredPlatforms.length > 0) {
       set("platformId", String(filteredPlatforms[0].id));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredPlatforms, rawgSuggestions, form.platformId]);
 
+  // Mapeia gêneros do RAWG pra gêneros existentes no banco (com match de nome)
+  const genreBadges = useMemo(() => {
+    if (!rawgSuggestions) return [];
+    return rawgSuggestions.genres.map((name) => {
+      const matched = allGenres.find(
+        (g) => normalizeName(g.name) === normalizeName(name)
+      );
+      return {
+        name,
+        matchedId: matched ? String(matched.id) : null,
+        isSelected: matched ? String(matched.id) === form.genreId : false,
+      };
+    });
+  }, [rawgSuggestions, allGenres, form.genreId]);
+
+  // Auto-seleciona o primeiro gênero compatível quando há sugestões
   useEffect(() => {
-    if (!rawgSuggestions) return;
-    if (filteredGenres.length === 1 && !form.genreId) {
-      set("genreId", String(filteredGenres[0].id));
+    if (!rawgSuggestions || form.genreId) return;
+    const firstMatch = genreBadges.find((b) => b.matchedId !== null);
+    if (firstMatch?.matchedId) {
+      set("genreId", firstMatch.matchedId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteredGenres, rawgSuggestions, form.genreId]);
+  }, [genreBadges, rawgSuggestions, form.genreId]);
+
+  const hasGenreBadges = rawgSuggestions && rawgSuggestions.genres.length > 0;
+  const hasGenreMatch = genreBadges.some((b) => b.matchedId !== null);
 
   const selectedPlatform = allPlatforms.find(
     (p) => String(p.id) === form.platformId
   );
-  const selectedGenre = allGenres.find(
-    (g) => String(g.id) === form.genreId
-  );
+  const selectedGenre = allGenres.find((g) => String(g.id) === form.genreId);
   const statusLabel = GAME_STATUS_LABELS[form.status];
   const isWishlist = form.status === "WISHLIST";
 
@@ -555,7 +553,7 @@ export function GameForm({
                 Sugestões da RAWG aplicadas
               </span>
               <span className="text-muted-foreground">
-                Mostrando apenas plataformas e gêneros relacionados
+                Plataformas e gêneros filtrados com base no jogo selecionado
               </span>
             </div>
             <Button
@@ -606,40 +604,111 @@ export function GameForm({
             ) : null}
           </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="genreId" className="text-sm">
-              Gênero *
-            </Label>
-            <Select
-              value={form.genreId}
-              onValueChange={(v) => set("genreId", v)}
-            >
-              <SelectTrigger id="genreId" className="h-11">
-                <SelectValue
-                  placeholder={
-                    genres.isLoading ? "Carregando..." : "Selecione"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {visibleGenres.map((genre) => (
-                  <SelectItem key={genre.id} value={String(genre.id)}>
-                    {genre.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FieldError message={errorFor("genreId")} />
-            {genres.isError ? (
-              <FieldError message="Não foi possível carregar os gêneros." />
-            ) : null}
-            {genresHadNoMatch ? (
-              <p className="text-xs text-amber-500">
-                RAWG sugere: {rawgSuggestions?.genres.join(", ")}. Nenhum
-                cadastrado — mostrando todos.
-              </p>
-            ) : null}
-          </div>
+          {/* GÊNERO — badges quando RAWG sugeriu, select normal caso contrário */}
+          {hasGenreBadges ? (
+            <div className="grid gap-2">
+              <Label className="text-sm">
+                Gênero *
+                <span className="ml-2 text-xs font-normal text-muted-foreground">
+                  (sugerido pelo RAWG)
+                </span>
+              </Label>
+
+              <div className="flex flex-wrap gap-1.5">
+                {genreBadges.map((badge) => {
+                  const clickable = badge.matchedId !== null;
+                  return (
+                    <button
+                      key={badge.name}
+                      type="button"
+                      disabled={!clickable}
+                      onClick={() => {
+                        if (badge.matchedId) {
+                          set("genreId", badge.matchedId);
+                        }
+                      }}
+                      title={
+                        clickable
+                          ? "Clique para selecionar"
+                          : "Não cadastrado no GameShelf"
+                      }
+                      className={[
+                        "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                        badge.isSelected
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : clickable
+                            ? "cursor-pointer border-border bg-surface hover:border-primary/50"
+                            : "cursor-not-allowed border-border bg-muted/50 text-muted-foreground opacity-60",
+                      ].join(" ")}
+                    >
+                      {badge.name}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {!hasGenreMatch ? (
+                <p className="text-xs text-amber-500">
+                  ⚠️ Nenhum gênero do RAWG está cadastrado no GameShelf.
+                  Escolha manualmente abaixo.
+                </p>
+              ) : null}
+
+              {/* Fallback: só aparece se nenhum gênero do RAWG bateu */}
+              {!hasGenreMatch ? (
+                <Select
+                  value={form.genreId}
+                  onValueChange={(v) => set("genreId", v)}
+                >
+                  <SelectTrigger id="genreId" className="h-11">
+                    <SelectValue
+                      placeholder={
+                        genres.isLoading ? "Carregando..." : "Selecione"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allGenres.map((genre) => (
+                      <SelectItem key={genre.id} value={String(genre.id)}>
+                        {genre.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : null}
+
+              <FieldError message={errorFor("genreId")} />
+            </div>
+          ) : (
+            <div className="grid gap-2">
+              <Label htmlFor="genreId" className="text-sm">
+                Gênero *
+              </Label>
+              <Select
+                value={form.genreId}
+                onValueChange={(v) => set("genreId", v)}
+              >
+                <SelectTrigger id="genreId" className="h-11">
+                  <SelectValue
+                    placeholder={
+                      genres.isLoading ? "Carregando..." : "Selecione"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {allGenres.map((genre) => (
+                    <SelectItem key={genre.id} value={String(genre.id)}>
+                      {genre.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FieldError message={errorFor("genreId")} />
+              {genres.isError ? (
+                <FieldError message="Não foi possível carregar os gêneros." />
+              ) : null}
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:justify-end">
