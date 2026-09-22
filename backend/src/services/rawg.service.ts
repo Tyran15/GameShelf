@@ -1,6 +1,7 @@
 const RAWG_BASE_URL = "https://api.rawg.io/api/games";
 const CACHE_TTL_MS = 1000 * 60 * 60; // 1 hora
 const MIN_QUERY_LENGTH = 3;
+const MAX_CACHE_SIZE = 100;
 
 type RawgGamePlatform = {
   platform: {
@@ -15,6 +16,7 @@ type RawgGameGenre = {
 };
 
 // Formato bruto (parcial) da resposta da API da RAWG.
+// O endpoint /games/{id} retorna campos extras (description_raw).
 type RawgGame = {
   id: number;
   name: string;
@@ -25,6 +27,7 @@ type RawgGame = {
   playtime: number;
   genres: RawgGameGenre[];
   platforms: RawgGamePlatform[] | null;
+  description_raw?: string;
 };
 
 type RawgSearchResponse = {
@@ -43,12 +46,17 @@ export type NormalizedGame = {
   platforms: string[];
 };
 
-type CacheEntry = {
-  data: NormalizedGame[];
+export type GameDetails = NormalizedGame & {
+  description: string | null;
+};
+
+type CacheEntry<T> = {
+  data: T;
   expiresAt: number;
 };
 
-const cache = new Map<string, CacheEntry>();
+const searchCache = new Map<string, CacheEntry<NormalizedGame[]>>();
+const detailsCache = new Map<number, CacheEntry<GameDetails>>();
 
 function normalizeGame(raw: RawgGame): NormalizedGame {
   return {
@@ -64,11 +72,22 @@ function normalizeGame(raw: RawgGame): NormalizedGame {
   };
 }
 
+function normalizeGameDetails(raw: RawgGame): GameDetails {
+  return {
+    ...normalizeGame(raw),
+    // description_raw é texto puro; description vem em HTML (evitamos)
+    description: raw.description_raw?.trim() || null,
+  };
+}
+
 function getCacheKey(query: string) {
   return query.trim().toLowerCase();
 }
 
-function getFromCache(key: string): NormalizedGame[] | null {
+function getFromCache<T>(
+  cache: Map<string | number, CacheEntry<T>>,
+  key: string | number
+): T | null {
   const entry = cache.get(key);
 
   if (!entry) return null;
@@ -81,11 +100,29 @@ function getFromCache(key: string): NormalizedGame[] | null {
   return entry.data;
 }
 
-function setCache(key: string, data: NormalizedGame[]) {
+function setCache<T>(
+  cache: Map<string | number, CacheEntry<T>>,
+  key: string | number,
+  data: T
+) {
+  // Evita crescimento ilimitado: remove a entrada mais antiga se cheio
+  if (cache.size >= MAX_CACHE_SIZE) {
+    const firstKey = cache.keys().next().value;
+    if (firstKey !== undefined) cache.delete(firstKey);
+  }
+
   cache.set(key, {
     data,
     expiresAt: Date.now() + CACHE_TTL_MS,
   });
+}
+
+function getApiKey(): string {
+  const apiKey = process.env.RAWG_API_KEY;
+  if (!apiKey) {
+    throw new Error("RAWG_API_KEY_NOT_CONFIGURED");
+  }
+  return apiKey;
 }
 
 export async function searchGames(query: string): Promise<NormalizedGame[]> {
@@ -96,18 +133,13 @@ export async function searchGames(query: string): Promise<NormalizedGame[]> {
   }
 
   const cacheKey = getCacheKey(trimmedQuery);
-  const cached = getFromCache(cacheKey);
+  const cached = getFromCache(searchCache, cacheKey);
   if (cached) {
     return cached;
   }
 
-  const apiKey = process.env.RAWG_API_KEY;
-  if (!apiKey) {
-    throw new Error("RAWG_API_KEY_NOT_CONFIGURED");
-  }
-
   const url = new URL(RAWG_BASE_URL);
-  url.searchParams.set("key", apiKey);
+  url.searchParams.set("key", getApiKey());
   url.searchParams.set("search", trimmedQuery);
   url.searchParams.set("page_size", "10");
 
@@ -120,7 +152,30 @@ export async function searchGames(query: string): Promise<NormalizedGame[]> {
   const payload = (await response.json()) as RawgSearchResponse;
   const normalized = (payload.results ?? []).map(normalizeGame);
 
-  setCache(cacheKey, normalized);
+  setCache(searchCache, cacheKey, normalized);
 
   return normalized;
+}
+
+export async function getGameDetails(id: number): Promise<GameDetails> {
+  const cached = getFromCache(detailsCache, id);
+  if (cached) {
+    return cached;
+  }
+
+  const url = new URL(`${RAWG_BASE_URL}/${id}`);
+  url.searchParams.set("key", getApiKey());
+
+  const response = await fetch(url.toString());
+
+  if (!response.ok) {
+    throw new Error(`RAWG_API_ERROR_${response.status}`);
+  }
+
+  const payload = (await response.json()) as RawgGame;
+  const details = normalizeGameDetails(payload);
+
+  setCache(detailsCache, id, details);
+
+  return details;
 }
