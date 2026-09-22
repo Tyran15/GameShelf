@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { RawgSearchModal } from "@/components/RawgSearchModal";
 import type { RawgGame } from "@/hooks/useRawgSearch";
+import { useRawgGameDetails } from "@/hooks/useRawgGameDetails";
 import { useGenres } from "@/hooks/useGenres";
 import { usePlatforms } from "@/hooks/usePlatforms";
 import {
@@ -86,11 +87,33 @@ export function GameForm({
   const [localErrors, setLocalErrors] = useState<Record<string, string>>({});
   const [coverError, setCoverError] = useState(false);
   const [rawgModalOpen, setRawgModalOpen] = useState(false);
+  const [selectedRawgId, setSelectedRawgId] = useState<number | null>(null);
 
   const platforms = usePlatforms();
   const genres = useGenres();
+  const rawgDetails = useRawgGameDetails(selectedRawgId);
+
+  // Quando os detalhes da RAWG chegam, preenche descrição e sincroniza demais campos
+  useEffect(() => {
+    if (!rawgDetails.data?.game) return;
+
+    const details = rawgDetails.data.game;
+
+    setForm((prev) => ({
+      ...prev,
+      title: details.title || prev.title,
+      description: details.description ?? prev.description,
+      coverUrl: details.coverUrl ?? prev.coverUrl,
+      releaseDate: details.releaseDate
+        ? details.releaseDate.slice(0, 10)
+        : prev.releaseDate,
+    }));
+
+    setSelectedRawgId(null);
+  }, [rawgDetails.data]);
 
   function handleRawgSelect(rawgGame: RawgGame) {
+    // Preenche imediatamente com dados da busca (UX rápida)
     setForm((prev) => ({
       ...prev,
       title: rawgGame.title,
@@ -99,6 +122,9 @@ export function GameForm({
         ? rawgGame.releaseDate.slice(0, 10)
         : prev.releaseDate,
     }));
+
+    // Dispara busca de detalhes em background (traz descrição)
+    setSelectedRawgId(rawgGame.rawgId);
   }
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
@@ -215,6 +241,8 @@ export function GameForm({
     onSubmit(payload);
   }
 
+  const isLoadingRawgDetails = rawgDetails.isLoading;
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -310,8 +338,13 @@ export function GameForm({
               className="h-11 w-11 shrink-0"
               title="Preencher com dados da RAWG"
               onClick={() => setRawgModalOpen(true)}
+              disabled={isLoadingRawgDetails}
             >
-              <Sparkles className="size-4" />
+              {isLoadingRawgDetails ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Sparkles className="size-4" />
+              )}
             </Button>
           </div>
           <FieldError message={errorFor("title")} />
@@ -327,6 +360,12 @@ export function GameForm({
         <div className="grid gap-2">
           <Label htmlFor="description" className="text-sm">
             Descrição
+            {isLoadingRawgDetails ? (
+              <span className="ml-2 inline-flex items-center gap-1 text-xs font-normal text-muted-foreground">
+                <Loader2 className="size-3 animate-spin" />
+                Buscando dados da RAWG...
+              </span>
+            ) : null}
           </Label>
           <Textarea
             id="description"
@@ -369,9 +408,7 @@ export function GameForm({
           </div>
         </div>
 
-        <div
-          className={`grid gap-5 ${isWishlist ? "" : "md:grid-cols-3"}`}
-        >
+        <div className={`grid gap-5 ${isWishlist ? "" : "md:grid-cols-3"}`}>
           <div className="grid gap-2">
             <Label htmlFor="status" className="text-sm">
               Status
