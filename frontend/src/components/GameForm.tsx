@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, ImageOff } from "lucide-react";
+import { Loader2, ImageOff, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { RawgSearchModal } from "@/components/RawgSearchModal";
+import type { RawgGame } from "@/hooks/useRawgSearch";
 import { useGenres } from "@/hooks/useGenres";
 import { usePlatforms } from "@/hooks/usePlatforms";
 import {
@@ -83,9 +85,21 @@ export function GameForm({
   const [form, setForm] = useState<FormState>(() => initialState(game));
   const [localErrors, setLocalErrors] = useState<Record<string, string>>({});
   const [coverError, setCoverError] = useState(false);
+  const [rawgModalOpen, setRawgModalOpen] = useState(false);
 
   const platforms = usePlatforms();
   const genres = useGenres();
+
+  function handleRawgSelect(rawgGame: RawgGame) {
+    setForm((prev) => ({
+      ...prev,
+      title: rawgGame.title,
+      coverUrl: rawgGame.coverUrl ?? prev.coverUrl,
+      releaseDate: rawgGame.releaseDate
+        ? rawgGame.releaseDate.slice(0, 10)
+        : prev.releaseDate,
+    }));
+  }
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -281,15 +295,34 @@ export function GameForm({
           <Label htmlFor="title" className="text-sm">
             Título *
           </Label>
-          <Input
-            id="title"
-            value={form.title}
-            onChange={(e) => set("title", e.target.value)}
-            placeholder="Ex.: Hollow Knight"
-            className="h-11"
-          />
+          <div className="flex gap-2">
+            <Input
+              id="title"
+              value={form.title}
+              onChange={(e) => set("title", e.target.value)}
+              placeholder="Ex.: Hollow Knight"
+              className="h-11"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-11 w-11 shrink-0"
+              title="Preencher com dados da RAWG"
+              onClick={() => setRawgModalOpen(true)}
+            >
+              <Sparkles className="size-4" />
+            </Button>
+          </div>
           <FieldError message={errorFor("title")} />
         </div>
+
+        <RawgSearchModal
+          open={rawgModalOpen}
+          onOpenChange={setRawgModalOpen}
+          initialQuery={form.title}
+          onSelect={handleRawgSelect}
+        />
 
         <div className="grid gap-2">
           <Label htmlFor="description" className="text-sm">
