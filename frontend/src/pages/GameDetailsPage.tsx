@@ -13,6 +13,7 @@ import { DeleteGameDialog } from "@/components/DeleteGameDialog";
 import { RatingPill } from "@/components/RatingPill";
 import { StatusBadge } from "@/components/StatusBadge";
 import { useDeleteGame, useGame } from "@/hooks/useGames";
+import { ExpandableDescription } from "@/components/ExpandableDescription";
 
 export function GameDetailsPage() {
   const { id } = useParams({ from: "/games/$id/" });
@@ -167,9 +168,7 @@ export function GameDetailsPage() {
               <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                 Descrição
               </h2>
-              <p className="whitespace-pre-line text-sm leading-relaxed sm:text-base">
-                {game.description}
-              </p>
+              <ExpandableDescription text={game.description} />
             </div>
           )}
 
