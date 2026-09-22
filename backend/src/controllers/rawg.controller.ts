@@ -1,0 +1,32 @@
+import { Request, Response } from "express";
+import { searchGames } from "../services/rawg.service";
+
+const MIN_QUERY_LENGTH = 3;
+
+export async function searchGamesController(req: Request, res: Response) {
+  const query = typeof req.query.q === "string" ? req.query.q : "";
+
+  if (query.trim().length < MIN_QUERY_LENGTH) {
+    return res.status(400).json({
+      message: `Informe ao menos ${MIN_QUERY_LENGTH} caracteres para buscar.`,
+    });
+  }
+
+  try {
+    const games = await searchGames(query);
+
+    return res.json({ games });
+  } catch (error) {
+    console.error(error);
+
+    if (error instanceof Error && error.message === "RAWG_API_KEY_NOT_CONFIGURED") {
+      return res.status(500).json({
+        message: "Integração com a RAWG não está configurada no servidor.",
+      });
+    }
+
+    return res.status(502).json({
+      message: "Não foi possível buscar jogos na RAWG no momento.",
+    });
+  }
+}
