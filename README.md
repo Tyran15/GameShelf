@@ -503,9 +503,10 @@ npm run dev
 * [ ] Wishlist avançada
 * [ ] Reviews
 * [ ] Dashboard e estatísticas avançadas
-* [ ] Integração com IGDB
+* [ ] Integração com RAWG
 * [ ] Integração com SteamGridDB
 * [ ] Integração com Steam
+* [ ] Integração com IGDB
 
 ### V3 — Diferenciais
 
