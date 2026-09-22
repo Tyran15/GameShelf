@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, ImageOff, Sparkles } from "lucide-react";
+import { Loader2, ImageOff, Sparkles, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,10 +12,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RawgSearchModal } from "@/components/RawgSearchModal";
+import { CreateEntityModal } from "@/components/CreateEntityModal";
 import type { RawgGame } from "@/hooks/useRawgSearch";
 import { useRawgGameDetails } from "@/hooks/useRawgGameDetails";
-import { useGenres } from "@/hooks/useGenres";
-import { usePlatforms } from "@/hooks/usePlatforms";
+import {
+  useCreatePlatform,
+  usePlatforms,
+} from "@/hooks/usePlatforms";
+import {
+  useCreateGenre,
+  useGenres,
+} from "@/hooks/useGenres";
 import {
   GAME_STATUSES,
   GAME_STATUS_LABELS,
@@ -100,9 +107,16 @@ export function GameForm({
   const [rawgSuggestions, setRawgSuggestions] =
     useState<RawgSuggestions | null>(null);
 
+  // Modal de criar plataforma
+  const [platformModalOpen, setPlatformModalOpen] = useState(false);
+  const [platformInitialName, setPlatformInitialName] = useState("");
+  const [platformError, setPlatformError] = useState<string | null>(null);
+
   const platforms = usePlatforms();
   const genres = useGenres();
   const rawgDetails = useRawgGameDetails(selectedRawgId);
+  const createPlatform = useCreatePlatform();
+  const createGenre = useCreateGenre();
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -155,32 +169,36 @@ export function GameForm({
   const allPlatforms = useMemo(() => platforms.data ?? [], [platforms.data]);
   const allGenres = useMemo(() => genres.data ?? [], [genres.data]);
 
-  const filteredPlatforms = useMemo(() => {
-    if (!rawgSuggestions) return allPlatforms;
-    return allPlatforms.filter((p) =>
-      rawgSuggestions.platforms.some(
-        (name) => normalizeName(name) === normalizeName(p.name)
-      )
-    );
-  }, [rawgSuggestions, allPlatforms]);
+  // --------- Plataformas ---------
+  const platformBadges = useMemo(() => {
+    if (!rawgSuggestions) return [];
+    return rawgSuggestions.platforms.map((name) => {
+      const matched = allPlatforms.find(
+        (p) => normalizeName(p.name) === normalizeName(name)
+      );
+      return {
+        name,
+        matchedId: matched ? String(matched.id) : null,
+        isSelected: matched ? String(matched.id) === form.platformId : false,
+      };
+    });
+  }, [rawgSuggestions, allPlatforms, form.platformId]);
 
-  const platformsHadNoMatch =
-    rawgSuggestions !== null &&
-    rawgSuggestions.platforms.length > 0 &&
-    filteredPlatforms.length === 0;
+  const hasPlatformSuggestions =
+    rawgSuggestions !== null && rawgSuggestions.platforms.length > 0;
+  const hasPlatformMatch = platformBadges.some((b) => b.matchedId !== null);
 
-  const visiblePlatforms = platformsHadNoMatch ? allPlatforms : filteredPlatforms;
-
-  // Auto-seleciona a primeira plataforma compatível quando há sugestões
+  // Auto-seleciona a primeira plataforma com match
   useEffect(() => {
     if (!rawgSuggestions || form.platformId) return;
-    if (filteredPlatforms.length > 0) {
-      set("platformId", String(filteredPlatforms[0].id));
+    const firstMatch = platformBadges.find((b) => b.matchedId !== null);
+    if (firstMatch?.matchedId) {
+      set("platformId", firstMatch.matchedId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteredPlatforms, rawgSuggestions, form.platformId]);
+  }, [platformBadges, rawgSuggestions, form.platformId]);
 
-  // Mapeia gêneros do RAWG pra gêneros existentes no banco (com match de nome)
+  // --------- Gêneros ---------
   const genreBadges = useMemo(() => {
     if (!rawgSuggestions) return [];
     return rawgSuggestions.genres.map((name) => {
@@ -195,7 +213,10 @@ export function GameForm({
     });
   }, [rawgSuggestions, allGenres, form.genreId]);
 
-  // Auto-seleciona o primeiro gênero compatível quando há sugestões
+  const hasGenreSuggestions =
+    rawgSuggestions !== null && rawgSuggestions.genres.length > 0;
+
+  // Auto-seleciona o primeiro gênero com match
   useEffect(() => {
     if (!rawgSuggestions || form.genreId) return;
     const firstMatch = genreBadges.find((b) => b.matchedId !== null);
@@ -205,8 +226,36 @@ export function GameForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [genreBadges, rawgSuggestions, form.genreId]);
 
-  const hasGenreBadges = rawgSuggestions && rawgSuggestions.genres.length > 0;
-  const hasGenreMatch = genreBadges.some((b) => b.matchedId !== null);
+  // --------- Criar plataforma via modal ---------
+  async function handleCreatePlatform(name: string) {
+    setPlatformError(null);
+    try {
+      const created = await createPlatform.mutateAsync({ name });
+      set("platformId", String(created.id));
+      setPlatformModalOpen(false);
+      setPlatformInitialName("");
+    } catch (err) {
+      setPlatformError(
+        err instanceof Error ? err.message : "Erro ao criar plataforma."
+      );
+    }
+  }
+
+  function openPlatformModalWithName(name: string) {
+    setPlatformInitialName(name);
+    setPlatformError(null);
+    setPlatformModalOpen(true);
+  }
+
+  // --------- Criar gênero direto do badge ---------
+  async function handleCreateGenreFromBadge(name: string) {
+    try {
+      const created = await createGenre.mutateAsync({ name });
+      set("genreId", String(created.id));
+    } catch {
+      // silencioso — o usuário pode usar o select fallback
+    }
+  }
 
   const selectedPlatform = allPlatforms.find(
     (p) => String(p.id) === form.platformId
@@ -313,349 +362,414 @@ export function GameForm({
   const isLoadingRawgDetails = rawgDetails.isLoading;
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="grid gap-6 lg:grid-cols-[220px_minmax(0,33vw)] lg:items-start"
-    >
-      <aside className="mx-auto w-full max-w-[220px] lg:mx-0">
-        <div className="lg:sticky lg:top-6">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Pré-visualização
-          </p>
+    <>
+      <form
+        onSubmit={handleSubmit}
+        className="grid gap-6 lg:grid-cols-[220px_minmax(0,33vw)] lg:items-start"
+      >
+        <aside className="mx-auto w-full max-w-[220px] lg:mx-0">
+          <div className="lg:sticky lg:top-6">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Pré-visualização
+            </p>
 
-          <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-card">
-            <div className="relative aspect-[2/3] w-full overflow-hidden bg-secondary">
-              {form.coverUrl.trim() && !coverError ? (
-                <>
-                  <img
-                    src={form.coverUrl.trim()}
-                    alt=""
-                    aria-hidden="true"
-                    className="absolute inset-0 size-full scale-110 object-cover blur-xl opacity-70"
-                  />
-                  <img
-                    src={form.coverUrl.trim()}
-                    alt={form.title || "Capa do jogo"}
-                    className="relative size-full object-contain"
-                    onError={() => setCoverError(true)}
-                    onLoad={() => setCoverError(false)}
-                  />
-                </>
-              ) : (
-                <div className="flex size-full flex-col items-center justify-center gap-2 text-muted-foreground">
-                  <ImageOff className="size-10" />
-                  <span className="px-3 text-center text-xs">
-                    {coverError
-                      ? "Não foi possível carregar a imagem."
-                      : "Sem capa"}
-                  </span>
+            <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-card">
+              <div className="relative aspect-[2/3] w-full overflow-hidden bg-secondary">
+                {form.coverUrl.trim() && !coverError ? (
+                  <>
+                    <img
+                      src={form.coverUrl.trim()}
+                      alt=""
+                      aria-hidden="true"
+                      className="absolute inset-0 size-full scale-110 object-cover blur-xl opacity-70"
+                    />
+                    <img
+                      src={form.coverUrl.trim()}
+                      alt={form.title || "Capa do jogo"}
+                      className="relative size-full object-contain"
+                      onError={() => setCoverError(true)}
+                      onLoad={() => setCoverError(false)}
+                    />
+                  </>
+                ) : (
+                  <div className="flex size-full flex-col items-center justify-center gap-2 text-muted-foreground">
+                    <ImageOff className="size-10" />
+                    <span className="px-3 text-center text-xs">
+                      {coverError
+                        ? "Não foi possível carregar a imagem."
+                        : "Sem capa"}
+                    </span>
+                  </div>
+                )}
+
+                <span className="absolute left-2 top-2 rounded-full bg-background/85 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide backdrop-blur">
+                  {statusLabel}
+                </span>
+              </div>
+
+              <div className="grid gap-1.5 p-3">
+                <h3 className="line-clamp-2 text-sm font-semibold">
+                  {form.title.trim() || "Título do jogo"}
+                </h3>
+
+                <div className="flex flex-wrap gap-1.5 text-xs text-muted-foreground">
+                  {selectedPlatform ? (
+                    <span className="rounded bg-muted px-2 py-0.5">
+                      {selectedPlatform.name}
+                    </span>
+                  ) : null}
+                  {selectedGenre ? (
+                    <span className="rounded bg-muted px-2 py-0.5">
+                      {selectedGenre.name}
+                    </span>
+                  ) : null}
                 </div>
-              )}
 
-              <span className="absolute left-2 top-2 rounded-full bg-background/85 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide backdrop-blur">
-                {statusLabel}
-              </span>
-            </div>
-
-            <div className="grid gap-1.5 p-3">
-              <h3 className="line-clamp-2 text-sm font-semibold">
-                {form.title.trim() || "Título do jogo"}
-              </h3>
-
-              <div className="flex flex-wrap gap-1.5 text-xs text-muted-foreground">
-                {selectedPlatform ? (
-                  <span className="rounded bg-muted px-2 py-0.5">
-                    {selectedPlatform.name}
-                  </span>
-                ) : null}
-                {selectedGenre ? (
-                  <span className="rounded bg-muted px-2 py-0.5">
-                    {selectedGenre.name}
-                  </span>
+                {ratingDisplay ? (
+                  <p className="text-sm font-medium">
+                    Nota:{" "}
+                    <span className="text-primary">{ratingDisplay}</span>
+                    <span className="text-muted-foreground"> / 10</span>
+                  </p>
                 ) : null}
               </div>
-
-              {ratingDisplay ? (
-                <p className="text-sm font-medium">
-                  Nota:{" "}
-                  <span className="text-primary">{ratingDisplay}</span>
-                  <span className="text-muted-foreground"> / 10</span>
-                </p>
-              ) : null}
             </div>
           </div>
-        </div>
-      </aside>
+        </aside>
 
-      <div className="grid w-full gap-4 rounded-2xl border border-border bg-surface p-5 shadow-card md:p-6">
-        <div className="grid gap-2">
-          <Label htmlFor="title" className="text-sm">
-            Título *
-          </Label>
-          <div className="flex gap-2">
-            <Input
-              id="title"
-              value={form.title}
-              onChange={(e) => set("title", e.target.value)}
-              placeholder="Ex.: Hollow Knight"
-              className="h-11"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="h-11 w-11 shrink-0"
-              title="Preencher com dados da RAWG"
-              aria-label="Preencher com dados da RAWG"
-              onClick={() => setRawgModalOpen(true)}
-              disabled={isLoadingRawgDetails}
-            >
-              {isLoadingRawgDetails ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Sparkles className="size-4" />
-              )}
-            </Button>
+        <div className="grid w-full gap-4 rounded-2xl border border-border bg-surface p-5 shadow-card md:p-6">
+          <div className="grid gap-2">
+            <Label htmlFor="title" className="text-sm">
+              Título *
+            </Label>
+            <div className="flex gap-2">
+              <Input
+                id="title"
+                value={form.title}
+                onChange={(e) => set("title", e.target.value)}
+                placeholder="Ex.: Hollow Knight"
+                className="h-11"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="h-11 w-11 shrink-0"
+                title="Preencher com dados da RAWG"
+                aria-label="Preencher com dados da RAWG"
+                onClick={() => setRawgModalOpen(true)}
+                disabled={isLoadingRawgDetails}
+              >
+                {isLoadingRawgDetails ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Sparkles className="size-4" />
+                )}
+              </Button>
+            </div>
+            <FieldError message={errorFor("title")} />
           </div>
-          <FieldError message={errorFor("title")} />
-        </div>
 
-        <RawgSearchModal
-          open={rawgModalOpen}
-          onOpenChange={setRawgModalOpen}
-          initialQuery={form.title}
-          onSelect={handleRawgSelect}
-        />
-
-        <div className="grid gap-2">
-          <Label htmlFor="description" className="text-sm">
-            Descrição
-            {isLoadingRawgDetails ? (
-              <span className="ml-2 inline-flex items-center gap-1 text-xs font-normal text-muted-foreground">
-                <Loader2 className="size-3 animate-spin" />
-                Buscando dados da RAWG...
-              </span>
-            ) : null}
-          </Label>
-          <Textarea
-            id="description"
-            value={form.description}
-            onChange={(e) => set("description", e.target.value)}
-            rows={3}
-            placeholder="Anotações sobre o jogo..."
-            className="min-h-[80px]"
+          <RawgSearchModal
+            open={rawgModalOpen}
+            onOpenChange={setRawgModalOpen}
+            initialQuery={form.title}
+            onSelect={handleRawgSelect}
           />
-          <FieldError message={errorFor("description")} />
-        </div>
 
-        <div className="grid gap-5 md:grid-cols-2">
           <div className="grid gap-2">
-            <Label htmlFor="coverUrl" className="text-sm">
-              URL da capa
+            <Label htmlFor="description" className="text-sm">
+              Descrição
+              {isLoadingRawgDetails ? (
+                <span className="ml-2 inline-flex items-center gap-1 text-xs font-normal text-muted-foreground">
+                  <Loader2 className="size-3 animate-spin" />
+                  Buscando dados da RAWG...
+                </span>
+              ) : null}
             </Label>
-            <Input
-              id="coverUrl"
-              value={form.coverUrl}
-              onChange={(e) => set("coverUrl", e.target.value)}
-              placeholder="https://..."
-              className="h-11"
+            <Textarea
+              id="description"
+              value={form.description}
+              onChange={(e) => set("description", e.target.value)}
+              rows={3}
+              placeholder="Anotações sobre o jogo..."
+              className="min-h-[80px]"
             />
-            <FieldError message={errorFor("coverUrl")} />
+            <FieldError message={errorFor("description")} />
           </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="releaseDate" className="text-sm">
-              Data de lançamento
-            </Label>
-            <Input
-              id="releaseDate"
-              type="date"
-              value={form.releaseDate}
-              onChange={(e) => set("releaseDate", e.target.value)}
-              className="h-11"
-            />
-            <FieldError message={errorFor("releaseDate")} />
-          </div>
-        </div>
+          <div className="grid gap-5 md:grid-cols-2">
+            <div className="grid gap-2">
+              <Label htmlFor="coverUrl" className="text-sm">
+                URL da capa
+              </Label>
+              <Input
+                id="coverUrl"
+                value={form.coverUrl}
+                onChange={(e) => set("coverUrl", e.target.value)}
+                placeholder="https://..."
+                className="h-11"
+              />
+              <FieldError message={errorFor("coverUrl")} />
+            </div>
 
-        <div className={`grid gap-5 ${isWishlist ? "" : "md:grid-cols-3"}`}>
-          <div className="grid gap-2">
-            <Label htmlFor="status" className="text-sm">
-              Status
-            </Label>
-            <Select
-              value={form.status}
-              onValueChange={(v) => handleStatusChange(v as GameStatus)}
-            >
-              <SelectTrigger id="status" className="h-11">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {GAME_STATUSES.map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {GAME_STATUS_LABELS[status]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FieldError message={errorFor("status")} />
+            <div className="grid gap-2">
+              <Label htmlFor="releaseDate" className="text-sm">
+                Data de lançamento
+              </Label>
+              <Input
+                id="releaseDate"
+                type="date"
+                value={form.releaseDate}
+                onChange={(e) => set("releaseDate", e.target.value)}
+                className="h-11"
+              />
+              <FieldError message={errorFor("releaseDate")} />
+            </div>
           </div>
 
-          {!isWishlist ? (
-            <>
-              <div className="grid gap-2">
-                <Label htmlFor="rating" className="text-sm">
-                  Nota (0 a 10)
-                </Label>
-                <Input
-                  id="rating"
-                  type="text"
-                  inputMode="decimal"
-                  value={form.rating}
-                  onChange={(e) => handleRatingChange(e.target.value)}
-                  placeholder="Ex.: 7.4"
-                  className="h-11"
-                />
-                <FieldError message={errorFor("rating")} />
-              </div>
+          <div className={`grid gap-5 ${isWishlist ? "" : "md:grid-cols-3"}`}>
+            <div className="grid gap-2">
+              <Label htmlFor="status" className="text-sm">
+                Status
+              </Label>
+              <Select
+                value={form.status}
+                onValueChange={(v) => handleStatusChange(v as GameStatus)}
+              >
+                <SelectTrigger id="status" className="h-11">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {GAME_STATUSES.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {GAME_STATUS_LABELS[status]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FieldError message={errorFor("status")} />
+            </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="hoursPlayed" className="text-sm">
-                  Horas jogadas
-                </Label>
-                <div className="relative">
+            {!isWishlist ? (
+              <>
+                <div className="grid gap-2">
+                  <Label htmlFor="rating" className="text-sm">
+                    Nota (0 a 10)
+                  </Label>
                   <Input
-                    id="hoursPlayed"
+                    id="rating"
                     type="text"
                     inputMode="decimal"
-                    value={form.hoursPlayed}
-                    onChange={(e) => handleHoursPlayedChange(e.target.value)}
-                    placeholder="Ex.: 42.5"
-                    className="h-11 pr-9"
+                    value={form.rating}
+                    onChange={(e) => handleRatingChange(e.target.value)}
+                    placeholder="Ex.: 7.4"
+                    className="h-11"
                   />
-                  <span
-                    aria-hidden="true"
-                    className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground"
-                  >
-                    h
-                  </span>
+                  <FieldError message={errorFor("rating")} />
                 </div>
-                <FieldError message={errorFor("hoursPlayed")} />
-              </div>
-            </>
-          ) : null}
-        </div>
 
-        {rawgSuggestions ? (
-          <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/40 p-3 text-xs sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-col gap-0.5">
-              <span className="font-medium text-foreground">
-                Sugestões da RAWG aplicadas
-              </span>
-              <span className="text-muted-foreground">
-                Plataformas e gêneros filtrados com base no jogo selecionado
-              </span>
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-7 self-start px-2 text-xs sm:self-auto"
-              onClick={() => setRawgSuggestions(null)}
-            >
-              Limpar sugestões
-            </Button>
-          </div>
-        ) : null}
-
-        <div className="grid gap-5 md:grid-cols-2">
-          <div className="grid gap-2">
-            <Label htmlFor="platformId" className="text-sm">
-              Plataforma *
-            </Label>
-            <Select
-              value={form.platformId}
-              onValueChange={(v) => set("platformId", v)}
-            >
-              <SelectTrigger id="platformId" className="h-11">
-                <SelectValue
-                  placeholder={
-                    platforms.isLoading ? "Carregando..." : "Selecione"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {visiblePlatforms.map((platform) => (
-                  <SelectItem key={platform.id} value={String(platform.id)}>
-                    {platform.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FieldError message={errorFor("platformId")} />
-            {platforms.isError ? (
-              <FieldError message="Não foi possível carregar as plataformas." />
-            ) : null}
-            {platformsHadNoMatch ? (
-              <p className="text-xs text-amber-500">
-                RAWG sugere: {rawgSuggestions?.platforms.join(", ")}. Nenhuma
-                cadastrada — mostrando todas.
-              </p>
-            ) : null}
-          </div>
-
-          {/* GÊNERO — badges quando RAWG sugeriu, select normal caso contrário */}
-          {hasGenreBadges ? (
-            <div className="grid gap-2">
-              <Label className="text-sm">
-                Gênero *
-                <span className="ml-2 text-xs font-normal text-muted-foreground">
-                  (sugerido pelo RAWG)
-                </span>
-              </Label>
-
-              <div className="flex flex-wrap gap-1.5">
-                {genreBadges.map((badge) => {
-                  const clickable = badge.matchedId !== null;
-                  return (
-                    <button
-                      key={badge.name}
-                      type="button"
-                      disabled={!clickable}
-                      onClick={() => {
-                        if (badge.matchedId) {
-                          set("genreId", badge.matchedId);
-                        }
-                      }}
-                      title={
-                        clickable
-                          ? "Clique para selecionar"
-                          : "Não cadastrado no GameShelf"
-                      }
-                      className={[
-                        "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-                        badge.isSelected
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : clickable
-                            ? "cursor-pointer border-border bg-surface hover:border-primary/50"
-                            : "cursor-not-allowed border-border bg-muted/50 text-muted-foreground opacity-60",
-                      ].join(" ")}
+                <div className="grid gap-2">
+                  <Label htmlFor="hoursPlayed" className="text-sm">
+                    Horas jogadas
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="hoursPlayed"
+                      type="text"
+                      inputMode="decimal"
+                      value={form.hoursPlayed}
+                      onChange={(e) => handleHoursPlayedChange(e.target.value)}
+                      placeholder="Ex.: 42.5"
+                      className="h-11 pr-9"
+                    />
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground"
                     >
-                      {badge.name}
-                    </button>
-                  );
-                })}
-              </div>
+                      h
+                    </span>
+                  </div>
+                  <FieldError message={errorFor("hoursPlayed")} />
+                </div>
+              </>
+            ) : null}
+          </div>
 
-              {!hasGenreMatch ? (
-                <p className="text-xs text-amber-500">
-                  ⚠️ Nenhum gênero do RAWG está cadastrado no GameShelf.
-                  Escolha manualmente abaixo.
-                </p>
+          {rawgSuggestions ? (
+            <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/40 p-3 text-xs sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-0.5">
+                <span className="font-medium text-foreground">
+                  Sugestões da RAWG aplicadas
+                </span>
+                <span className="text-muted-foreground">
+                  Plataformas e gêneros do jogo selecionado
+                </span>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 self-start px-2 text-xs sm:self-auto"
+                onClick={() => setRawgSuggestions(null)}
+              >
+                Limpar sugestões
+              </Button>
+            </div>
+          ) : null}
+
+          <div className="grid gap-5 md:grid-cols-2">
+            {/* PLATAFORMA */}
+            <div className="grid gap-2">
+              <Label htmlFor="platformId" className="text-sm">
+                Plataforma *
+              </Label>
+              <div className="flex gap-2">
+                <Select
+                  value={form.platformId}
+                  onValueChange={(v) => set("platformId", v)}
+                >
+                  <SelectTrigger id="platformId" className="h-11 flex-1">
+                    <SelectValue
+                      placeholder={
+                        platforms.isLoading ? "Carregando..." : "Selecione"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allPlatforms.map((platform) => (
+                      <SelectItem key={platform.id} value={String(platform.id)}>
+                        {platform.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-11 w-11 shrink-0"
+                  title="Adicionar nova plataforma"
+                  aria-label="Adicionar nova plataforma"
+                  onClick={() => openPlatformModalWithName("")}
+                >
+                  <Plus className="size-4" />
+                </Button>
+              </div>
+              <FieldError message={errorFor("platformId")} />
+              {platforms.isError ? (
+                <FieldError message="Não foi possível carregar as plataformas." />
               ) : null}
 
-              {/* Fallback: só aparece se nenhum gênero do RAWG bateu */}
-              {!hasGenreMatch ? (
+              {hasPlatformSuggestions && !hasPlatformMatch ? (
+                <div className="flex flex-col gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/5 p-2 text-xs">
+                  <span className="text-amber-600 dark:text-amber-500">
+                    RAWG sugere: {rawgSuggestions?.platforms.join(", ")}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      openPlatformModalWithName(
+                        rawgSuggestions?.platforms[0] ?? ""
+                      )
+                    }
+                    className="self-start text-primary underline underline-offset-2 hover:no-underline"
+                  >
+                    + Criar "{rawgSuggestions?.platforms[0]}"
+                  </button>
+                </div>
+              ) : null}
+            </div>
+
+            {/* GÊNERO */}
+            {hasGenreSuggestions ? (
+              <div className="grid gap-2">
+                <Label className="text-sm">
+                  Gênero *
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">
+                    (sugerido pelo RAWG)
+                  </span>
+                </Label>
+
+                <div className="flex flex-wrap gap-1.5">
+                  {genreBadges.map((badge) => {
+                    const matched = badge.matchedId !== null;
+                    const isPending =
+                      createGenre.isPending &&
+                      createGenre.variables?.name === badge.name;
+
+                    return (
+                      <button
+                        key={badge.name}
+                        type="button"
+                        onClick={() => {
+                          if (matched && badge.matchedId) {
+                            set("genreId", badge.matchedId);
+                          } else if (!matched) {
+                            handleCreateGenreFromBadge(badge.name);
+                          }
+                        }}
+                        disabled={isPending}
+                        title={
+                          matched
+                            ? "Clique para selecionar"
+                            : "Clique para criar e selecionar"
+                        }
+                        className={[
+                          "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                          badge.isSelected
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : matched
+                              ? "cursor-pointer border-border bg-surface hover:border-primary/50"
+                              : "cursor-pointer border-dashed border-primary/40 bg-primary/5 text-primary hover:bg-primary/10",
+                        ].join(" ")}
+                      >
+                        {isPending ? (
+                          <Loader2 className="size-3 animate-spin" />
+                        ) : null}
+                        {!matched && !isPending ? (
+                          <Plus className="size-3" />
+                        ) : null}
+                        {badge.name}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <p className="text-xs text-muted-foreground">
+                  Clique em um gênero com + pra criá-lo, ou escolha um
+                  existente abaixo.
+                </p>
+
+                <Select
+                  value={form.genreId}
+                  onValueChange={(v) => set("genreId", v)}
+                >
+                  <SelectTrigger id="genreId" className="h-11">
+                    <SelectValue
+                      placeholder={
+                        genres.isLoading
+                          ? "Carregando..."
+                          : "Ou escolha um existente"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allGenres.map((genre) => (
+                      <SelectItem key={genre.id} value={String(genre.id)}>
+                        {genre.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <FieldError message={errorFor("genreId")} />
+              </div>
+            ) : (
+              <div className="grid gap-2">
+                <Label htmlFor="genreId" className="text-sm">
+                  Gênero *
+                </Label>
                 <Select
                   value={form.genreId}
                   onValueChange={(v) => set("genreId", v)}
@@ -675,60 +789,45 @@ export function GameForm({
                     ))}
                   </SelectContent>
                 </Select>
-              ) : null}
+                <FieldError message={errorFor("genreId")} />
+                {genres.isError ? (
+                  <FieldError message="Não foi possível carregar os gêneros." />
+                ) : null}
+              </div>
+            )}
+          </div>
 
-              <FieldError message={errorFor("genreId")} />
-            </div>
-          ) : (
-            <div className="grid gap-2">
-              <Label htmlFor="genreId" className="text-sm">
-                Gênero *
-              </Label>
-              <Select
-                value={form.genreId}
-                onValueChange={(v) => set("genreId", v)}
-              >
-                <SelectTrigger id="genreId" className="h-11">
-                  <SelectValue
-                    placeholder={
-                      genres.isLoading ? "Carregando..." : "Selecione"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {allGenres.map((genre) => (
-                    <SelectItem key={genre.id} value={String(genre.id)}>
-                      {genre.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FieldError message={errorFor("genreId")} />
-              {genres.isError ? (
-                <FieldError message="Não foi possível carregar os gêneros." />
+          <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              className="h-11 px-5"
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isSubmitting} className="h-11 px-5">
+              {isSubmitting ? (
+                <Loader2 className="size-5 animate-spin" />
               ) : null}
-            </div>
-          )}
+              {submitLabel}
+            </Button>
+          </div>
         </div>
+      </form>
 
-        <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-            className="h-11 px-5"
-          >
-            Cancelar
-          </Button>
-          <Button type="submit" disabled={isSubmitting} className="h-11 px-5">
-            {isSubmitting ? (
-              <Loader2 className="size-5 animate-spin" />
-            ) : null}
-            {submitLabel}
-          </Button>
-        </div>
-      </div>
-    </form>
+      <CreateEntityModal
+        open={platformModalOpen}
+        onOpenChange={setPlatformModalOpen}
+        title="Nova plataforma"
+        description="Adicione uma plataforma que ainda não está cadastrada."
+        placeholder="Ex.: PlayStation 5"
+        initialName={platformInitialName}
+        isPending={createPlatform.isPending}
+        error={platformError}
+        onSubmit={handleCreatePlatform}
+      />
+    </>
   );
 }
 
