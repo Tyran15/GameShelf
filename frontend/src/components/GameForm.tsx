@@ -179,17 +179,6 @@ export function GameForm({
 
   const hasPlatformSuggestions =
     rawgSuggestions !== null && rawgSuggestions.platforms.length > 0;
-  const hasPlatformMatch = platformBadges.some((b) => b.matchedId !== null);
-
-  // Plataformas visíveis: filtra pelas sugestões do RAWG quando houver match
-  const visiblePlatforms = useMemo(() => {
-    if (!hasPlatformSuggestions || !hasPlatformMatch) return allPlatforms;
-    return allPlatforms.filter((p) =>
-      platformBadges.some(
-        (b) => b.matchedId !== null && b.matchedId === String(p.id)
-      )
-    );
-  }, [hasPlatformSuggestions, hasPlatformMatch, allPlatforms, platformBadges]);
 
   // Auto-seleciona a primeira plataforma com match
   useEffect(() => {
@@ -248,6 +237,16 @@ export function GameForm({
     setPlatformInitialName(name);
     setPlatformError(null);
     setPlatformModalOpen(true);
+  }
+
+  // --------- Criar plataforma direto do badge ---------
+  async function handleCreatePlatformFromBadge(name: string) {
+    try {
+      const created = await createPlatform.mutateAsync({ name });
+      set("platformId", String(created.id));
+    } catch {
+      // silencioso — o usuário pode usar o select fallback
+    }
   }
 
   // --------- Criar gênero direto do badge ---------
@@ -624,68 +623,146 @@ export function GameForm({
           <div className="grid gap-5 md:grid-cols-2">
             {/* PLATAFORMA */}
             <div className="grid gap-2">
-              <Label htmlFor="platformId" className="text-sm">
+              <Label className="text-sm">
                 Plataforma *
-                {hasPlatformSuggestions && hasPlatformMatch ? (
+                {hasPlatformSuggestions ? (
                   <span className="ml-2 text-xs font-normal text-muted-foreground">
-                    (filtrado pela RAWG)
+                    (sugerido pelo RAWG)
                   </span>
                 ) : null}
               </Label>
-              <div className="flex gap-2">
-                <Select
-                  value={form.platformId}
-                  onValueChange={(v) => set("platformId", v)}
-                >
-                  <SelectTrigger id="platformId" className="h-11 flex-1">
-                    <SelectValue
-                      placeholder={
-                        platforms.isLoading ? "Carregando..." : "Selecione"
-                      }
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {visiblePlatforms.map((platform) => (
-                      <SelectItem key={platform.id} value={String(platform.id)}>
-                        {platform.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="h-11 w-11 shrink-0"
-                  title="Adicionar nova plataforma"
-                  aria-label="Adicionar nova plataforma"
-                  onClick={() => openPlatformModalWithName("")}
-                >
-                  <Plus className="size-4" />
-                </Button>
-              </div>
+
+              {hasPlatformSuggestions ? (
+                <>
+                  <div className="flex flex-wrap gap-1.5">
+                    {platformBadges.map((badge) => {
+                      const matched = badge.matchedId !== null;
+                      const isPending =
+                        createPlatform.isPending &&
+                        createPlatform.variables?.name === badge.name;
+
+                      return (
+                        <button
+                          key={badge.name}
+                          type="button"
+                          onClick={() => {
+                            if (matched && badge.matchedId) {
+                              set("platformId", badge.matchedId);
+                            } else if (!matched) {
+                              handleCreatePlatformFromBadge(badge.name);
+                            }
+                          }}
+                          disabled={isPending}
+                          title={
+                            matched
+                              ? "Clique para selecionar"
+                              : "Clique para criar e selecionar"
+                          }
+                          className={[
+                            "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                            badge.isSelected
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : matched
+                                ? "cursor-pointer border-border bg-surface hover:border-primary/50"
+                                : "cursor-pointer border-dashed border-primary/40 bg-primary/5 text-primary hover:bg-primary/10",
+                          ].join(" ")}
+                        >
+                          {isPending ? (
+                            <Loader2 className="size-3 animate-spin" />
+                          ) : null}
+                          {!matched && !isPending ? (
+                            <Plus className="size-3" />
+                          ) : null}
+                          {badge.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <p className="text-xs text-muted-foreground">
+                    Clique em uma plataforma com + pra criá-la, ou escolha uma
+                    existente abaixo.
+                  </p>
+
+                  <div className="flex gap-2">
+                    <Select
+                      value={form.platformId}
+                      onValueChange={(v) => set("platformId", v)}
+                    >
+                      <SelectTrigger id="platformId" className="h-11 flex-1">
+                        <SelectValue
+                          placeholder={
+                            platforms.isLoading
+                              ? "Carregando..."
+                              : "Ou escolha uma existente"
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {allPlatforms.map((platform) => (
+                          <SelectItem
+                            key={platform.id}
+                            value={String(platform.id)}
+                          >
+                            {platform.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-11 w-11 shrink-0"
+                      title="Adicionar nova plataforma"
+                      aria-label="Adicionar nova plataforma"
+                      onClick={() => openPlatformModalWithName("")}
+                    >
+                      <Plus className="size-4" />
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div className="flex gap-2">
+                  <Select
+                    value={form.platformId}
+                    onValueChange={(v) => set("platformId", v)}
+                  >
+                    <SelectTrigger id="platformId" className="h-11 flex-1">
+                      <SelectValue
+                        placeholder={
+                          platforms.isLoading ? "Carregando..." : "Selecione"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {allPlatforms.map((platform) => (
+                        <SelectItem
+                          key={platform.id}
+                          value={String(platform.id)}
+                        >
+                          {platform.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-11 w-11 shrink-0"
+                    title="Adicionar nova plataforma"
+                    aria-label="Adicionar nova plataforma"
+                    onClick={() => openPlatformModalWithName("")}
+                  >
+                    <Plus className="size-4" />
+                  </Button>
+                </div>
+              )}
+
               <FieldError message={errorFor("platformId")} />
               {platforms.isError ? (
                 <FieldError message="Não foi possível carregar as plataformas." />
-              ) : null}
-
-              {hasPlatformSuggestions && !hasPlatformMatch ? (
-                <div className="flex flex-col gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/5 p-2 text-xs">
-                  <span className="text-amber-600 dark:text-amber-500">
-                    RAWG sugere: {rawgSuggestions?.platforms.join(", ")}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      openPlatformModalWithName(
-                        rawgSuggestions?.platforms[0] ?? ""
-                      )
-                    }
-                    className="self-start text-primary underline underline-offset-2 hover:no-underline"
-                  >
-                    + Criar "{rawgSuggestions?.platforms[0]}"
-                  </button>
-                </div>
               ) : null}
             </div>
 
