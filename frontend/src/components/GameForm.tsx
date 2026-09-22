@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Loader2, ImageOff, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,11 @@ type FormState = {
   genreId: string;
 };
 
+type RawgSuggestions = {
+  platforms: string[];
+  genres: string[];
+};
+
 function initialState(game?: Game): FormState {
   const status = game?.status ?? "WISHLIST";
   const isWishlist = status === "WISHLIST";
@@ -68,6 +73,10 @@ function parseDecimal(value: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+function normalizeName(name: string): string {
+  return name.trim().toLowerCase();
+}
+
 export function GameForm({
   game,
   submitLabel,
@@ -88,10 +97,15 @@ export function GameForm({
   const [coverError, setCoverError] = useState(false);
   const [rawgModalOpen, setRawgModalOpen] = useState(false);
   const [selectedRawgId, setSelectedRawgId] = useState<number | null>(null);
+  const [rawgSuggestions, setRawgSuggestions] =
+    useState<RawgSuggestions | null>(null);
 
   const platforms = usePlatforms();
   const genres = useGenres();
   const rawgDetails = useRawgGameDetails(selectedRawgId);
+
+  const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
+    setForm((prev) => ({ ...prev, [key]: value }));
 
   // Quando os detalhes da RAWG chegam, preenche descrição e sincroniza demais campos
   useEffect(() => {
@@ -123,12 +137,17 @@ export function GameForm({
         : prev.releaseDate,
     }));
 
+    // Guarda as sugestões pra filtrar os selects
+    if (rawgGame.platforms.length > 0 || rawgGame.genres.length > 0) {
+      setRawgSuggestions({
+        platforms: rawgGame.platforms,
+        genres: rawgGame.genres,
+      });
+    }
+
     // Dispara busca de detalhes em background (traz descrição)
     setSelectedRawgId(rawgGame.rawgId);
   }
-
-  const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
-    setForm((prev) => ({ ...prev, [key]: value }));
 
   useEffect(() => {
     setCoverError(false);
@@ -137,10 +156,62 @@ export function GameForm({
   const errorFor = (field: string) =>
     localErrors[field] ?? fieldErrors?.[field]?.[0];
 
-  const selectedPlatform = platforms.data?.find(
+  const allPlatforms = useMemo(() => platforms.data ?? [], [platforms.data]);
+  const allGenres = useMemo(() => genres.data ?? [], [genres.data]);
+
+  const filteredPlatforms = useMemo(() => {
+    if (!rawgSuggestions) return allPlatforms;
+    return allPlatforms.filter((p) =>
+      rawgSuggestions.platforms.some(
+        (name) => normalizeName(name) === normalizeName(p.name)
+      )
+    );
+  }, [rawgSuggestions, allPlatforms]);
+
+  const filteredGenres = useMemo(() => {
+    if (!rawgSuggestions) return allGenres;
+    return allGenres.filter((g) =>
+      rawgSuggestions.genres.some(
+        (name) => normalizeName(name) === normalizeName(g.name)
+      )
+    );
+  }, [rawgSuggestions, allGenres]);
+
+  // Fallback: se nenhuma sugestão bateu com o banco, mostra todas
+  const platformsHadNoMatch =
+    rawgSuggestions !== null &&
+    rawgSuggestions.platforms.length > 0 &&
+    filteredPlatforms.length === 0;
+
+  const genresHadNoMatch =
+    rawgSuggestions !== null &&
+    rawgSuggestions.genres.length > 0 &&
+    filteredGenres.length === 0;
+
+  const visiblePlatforms = platformsHadNoMatch ? allPlatforms : filteredPlatforms;
+  const visibleGenres = genresHadNoMatch ? allGenres : filteredGenres;
+
+  // Auto-seleciona quando só há 1 opção compatível
+  useEffect(() => {
+    if (!rawgSuggestions) return;
+    if (filteredPlatforms.length === 1 && !form.platformId) {
+      set("platformId", String(filteredPlatforms[0].id));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredPlatforms, rawgSuggestions, form.platformId]);
+
+  useEffect(() => {
+    if (!rawgSuggestions) return;
+    if (filteredGenres.length === 1 && !form.genreId) {
+      set("genreId", String(filteredGenres[0].id));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredGenres, rawgSuggestions, form.genreId]);
+
+  const selectedPlatform = allPlatforms.find(
     (p) => String(p.id) === form.platformId
   );
-  const selectedGenre = genres.data?.find(
+  const selectedGenre = allGenres.find(
     (g) => String(g.id) === form.genreId
   );
   const statusLabel = GAME_STATUS_LABELS[form.status];
@@ -337,6 +408,7 @@ export function GameForm({
               size="icon"
               className="h-11 w-11 shrink-0"
               title="Preencher com dados da RAWG"
+              aria-label="Preencher com dados da RAWG"
               onClick={() => setRawgModalOpen(true)}
               disabled={isLoadingRawgDetails}
             >
@@ -476,6 +548,28 @@ export function GameForm({
           ) : null}
         </div>
 
+        {rawgSuggestions ? (
+          <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/40 p-3 text-xs sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-0.5">
+              <span className="font-medium text-foreground">
+                Sugestões da RAWG aplicadas
+              </span>
+              <span className="text-muted-foreground">
+                Mostrando apenas plataformas e gêneros relacionados
+              </span>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 self-start px-2 text-xs sm:self-auto"
+              onClick={() => setRawgSuggestions(null)}
+            >
+              Limpar sugestões
+            </Button>
+          </div>
+        ) : null}
+
         <div className="grid gap-5 md:grid-cols-2">
           <div className="grid gap-2">
             <Label htmlFor="platformId" className="text-sm">
@@ -493,7 +587,7 @@ export function GameForm({
                 />
               </SelectTrigger>
               <SelectContent>
-                {(platforms.data ?? []).map((platform) => (
+                {visiblePlatforms.map((platform) => (
                   <SelectItem key={platform.id} value={String(platform.id)}>
                     {platform.name}
                   </SelectItem>
@@ -503,6 +597,12 @@ export function GameForm({
             <FieldError message={errorFor("platformId")} />
             {platforms.isError ? (
               <FieldError message="Não foi possível carregar as plataformas." />
+            ) : null}
+            {platformsHadNoMatch ? (
+              <p className="text-xs text-amber-500">
+                RAWG sugere: {rawgSuggestions?.platforms.join(", ")}. Nenhuma
+                cadastrada — mostrando todas.
+              </p>
             ) : null}
           </div>
 
@@ -522,7 +622,7 @@ export function GameForm({
                 />
               </SelectTrigger>
               <SelectContent>
-                {(genres.data ?? []).map((genre) => (
+                {visibleGenres.map((genre) => (
                   <SelectItem key={genre.id} value={String(genre.id)}>
                     {genre.name}
                   </SelectItem>
@@ -532,6 +632,12 @@ export function GameForm({
             <FieldError message={errorFor("genreId")} />
             {genres.isError ? (
               <FieldError message="Não foi possível carregar os gêneros." />
+            ) : null}
+            {genresHadNoMatch ? (
+              <p className="text-xs text-amber-500">
+                RAWG sugere: {rawgSuggestions?.genres.join(", ")}. Nenhum
+                cadastrado — mostrando todos.
+              </p>
             ) : null}
           </div>
         </div>
