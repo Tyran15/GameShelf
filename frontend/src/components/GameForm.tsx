@@ -15,14 +15,8 @@ import { RawgSearchModal } from "@/components/RawgSearchModal";
 import { CreateEntityModal } from "@/components/CreateEntityModal";
 import type { RawgGame } from "@/hooks/useRawgSearch";
 import { useRawgGameDetails } from "@/hooks/useRawgGameDetails";
-import {
-  useCreatePlatform,
-  usePlatforms,
-} from "@/hooks/usePlatforms";
-import {
-  useCreateGenre,
-  useGenres,
-} from "@/hooks/useGenres";
+import { useCreatePlatform, usePlatforms } from "@/hooks/usePlatforms";
+import { useCreateGenre, useGenres } from "@/hooks/useGenres";
 import {
   GAME_STATUSES,
   GAME_STATUS_LABELS,
@@ -107,7 +101,6 @@ export function GameForm({
   const [rawgSuggestions, setRawgSuggestions] =
     useState<RawgSuggestions | null>(null);
 
-  // Modal de criar plataforma
   const [platformModalOpen, setPlatformModalOpen] = useState(false);
   const [platformInitialName, setPlatformInitialName] = useState("");
   const [platformError, setPlatformError] = useState<string | null>(null);
@@ -187,6 +180,16 @@ export function GameForm({
   const hasPlatformSuggestions =
     rawgSuggestions !== null && rawgSuggestions.platforms.length > 0;
   const hasPlatformMatch = platformBadges.some((b) => b.matchedId !== null);
+
+  // Plataformas visíveis: filtra pelas sugestões do RAWG quando houver match
+  const visiblePlatforms = useMemo(() => {
+    if (!hasPlatformSuggestions || !hasPlatformMatch) return allPlatforms;
+    return allPlatforms.filter((p) =>
+      platformBadges.some(
+        (b) => b.matchedId !== null && b.matchedId === String(p.id)
+      )
+    );
+  }, [hasPlatformSuggestions, hasPlatformMatch, allPlatforms, platformBadges]);
 
   // Auto-seleciona a primeira plataforma com match
   useEffect(() => {
@@ -623,6 +626,11 @@ export function GameForm({
             <div className="grid gap-2">
               <Label htmlFor="platformId" className="text-sm">
                 Plataforma *
+                {hasPlatformSuggestions && hasPlatformMatch ? (
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">
+                    (filtrado pela RAWG)
+                  </span>
+                ) : null}
               </Label>
               <div className="flex gap-2">
                 <Select
@@ -637,7 +645,7 @@ export function GameForm({
                     />
                   </SelectTrigger>
                   <SelectContent>
-                    {allPlatforms.map((platform) => (
+                    {visiblePlatforms.map((platform) => (
                       <SelectItem key={platform.id} value={String(platform.id)}>
                         {platform.name}
                       </SelectItem>
