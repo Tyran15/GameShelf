@@ -47,6 +47,9 @@ export function GameDetailsPage() {
     ? new Date(game.releaseDate).toLocaleDateString("pt-BR")
     : "—";
 
+  const hasHoursPlayed =
+    game.hoursPlayed !== null && game.hoursPlayed !== undefined;
+
   function handleOpenDialog() {
     setErrorMessage(null);
     setDialogOpen(true);
@@ -142,7 +145,11 @@ export function GameDetailsPage() {
               <p className="mt-1 font-medium">{game.genre.name}</p>
             </div>
 
-            <div className="rounded-xl border border-border bg-surface p-4">
+            <div
+              className={`rounded-xl border border-border bg-surface p-4 ${
+                hasHoursPlayed ? "" : "sm:col-span-2"
+              }`}
+            >
               <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 <Calendar className="size-3.5" />
                 Lançamento
@@ -150,17 +157,15 @@ export function GameDetailsPage() {
               <p className="mt-1 font-medium">{releaseDate}</p>
             </div>
 
-            <div className="rounded-xl border border-border bg-surface p-4">
-              <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                <Clock className="size-3.5" />
-                Horas jogadas
-              </p>
-              <p className="mt-1 font-medium">
-                {game.hoursPlayed !== null && game.hoursPlayed !== undefined
-                  ? `${game.hoursPlayed}h`
-                  : "—"}
-              </p>
-            </div>
+            {hasHoursPlayed ? (
+              <div className="rounded-xl border border-border bg-surface p-4">
+                <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  <Clock className="size-3.5" />
+                  Horas jogadas
+                </p>
+                <p className="mt-1 font-medium">{game.hoursPlayed}h</p>
+              </div>
+            ) : null}
           </div>
 
           {game.description && (
