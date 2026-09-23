@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, ImageOff, Sparkles, Plus } from "lucide-react";
+import {
+  Loader2,
+  ImageOff,
+  Image as ImageIcon,
+  Sparkles,
+  Plus,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { RawgSearchModal } from "@/components/RawgSearchModal";
 import { CreateEntityModal } from "@/components/CreateEntityModal";
+import { CoverSelectorModal } from "@/components/CoverSelectorModal";
 import type { RawgGame } from "@/hooks/useRawgSearch";
 import { useRawgGameDetails } from "@/hooks/useRawgGameDetails";
 import { useCreatePlatform, usePlatforms } from "@/hooks/usePlatforms";
@@ -100,6 +107,7 @@ export function GameForm({
   const [selectedRawgId, setSelectedRawgId] = useState<number | null>(null);
   const [rawgSuggestions, setRawgSuggestions] =
     useState<RawgSuggestions | null>(null);
+  const [coverModalOpen, setCoverModalOpen] = useState(false);
 
   const [platformModalOpen, setPlatformModalOpen] = useState(false);
   const [platformInitialName, setPlatformInitialName] = useState("");
@@ -150,6 +158,10 @@ export function GameForm({
     }
 
     setSelectedRawgId(rawgGame.rawgId);
+  }
+
+  function handleCoverSelect(url: string) {
+    set("coverUrl", url);
   }
 
   useEffect(() => {
@@ -505,15 +517,36 @@ export function GameForm({
               <Label htmlFor="coverUrl" className="text-sm">
                 URL da capa
               </Label>
-              <Input
-                id="coverUrl"
-                value={form.coverUrl}
-                onChange={(e) => set("coverUrl", e.target.value)}
-                placeholder="https://..."
-                className="h-11"
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="coverUrl"
+                  value={form.coverUrl}
+                  onChange={(e) => set("coverUrl", e.target.value)}
+                  placeholder="https://..."
+                  className="h-11"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-11 w-11 shrink-0"
+                  title="Escolher capa no SteamGridDB"
+                  aria-label="Escolher capa no SteamGridDB"
+                  onClick={() => setCoverModalOpen(true)}
+                >
+                  <ImageIcon className="size-4" />
+                </Button>
+              </div>
               <FieldError message={errorFor("coverUrl")} />
             </div>
+
+            <CoverSelectorModal
+              open={coverModalOpen}
+              onOpenChange={setCoverModalOpen}
+              initialQuery={form.title}
+              currentCoverUrl={form.coverUrl}
+              onSelect={handleCoverSelect}
+            />
 
             <div className="grid gap-2">
               <Label htmlFor="releaseDate" className="text-sm">
