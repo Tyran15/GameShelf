@@ -144,7 +144,7 @@ export function GameForm({
     setForm((prev) => ({
       ...prev,
       title: rawgGame.title,
-      coverUrl: rawgGame.coverUrl ?? prev.coverUrl,
+      coverUrl: rawgGame.sgdbCoverUrl ?? rawgGame.coverUrl ?? prev.coverUrl,
       releaseDate: rawgGame.releaseDate
         ? rawgGame.releaseDate.slice(0, 10)
         : prev.releaseDate,

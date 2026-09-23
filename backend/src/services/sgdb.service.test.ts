@@ -235,3 +235,95 @@ describe("getCoversByGameId", () => {
     expect(fetchMock).toHaveBeenCalledOnce();
   });
 });
+
+import {
+  findFirstCoverByTitle,
+  searchGames,
+} from "./sgdb.service";
+
+describe("findFirstCoverByTitle", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    process.env.STEAMGRIDDB_API_KEY = "test-key";
+  });
+
+  it("retorna a capa de maior score quando encontra o jogo", async () => {
+    const fetchMock = vi
+      .fn()
+      // Primeira chamada: search
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [{ id: 123, name: "Hollow Knight" }],
+        }),
+      })
+      // Segunda chamada: covers
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [
+            { url: "https://cdn/lower.jpg", score: 10 },
+            { url: "https://cdn/higher.jpg", score: 50 },
+          ],
+        }),
+      });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await findFirstCoverByTitle("Hollow Knight");
+
+    expect(result).toBe("https://cdn/higher.jpg");
+  });
+
+  it("retorna null quando o título do SGDB não bate", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        data: [{ id: 999, name: "Jogo Totalmente Diferente" }],
+      }),
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await findFirstCoverByTitle("Hollow Knight");
+
+    expect(result).toBeNull();
+  });
+
+  it("retorna null quando o SGDB retorna erro HTTP", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await findFirstCoverByTitle("Hollow Knight");
+
+    expect(result).toBeNull();
+  });
+
+  it("retorna null quando não há STEAMGRIDDB_API_KEY", async () => {
+    delete process.env.STEAMGRIDDB_API_KEY;
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await findFirstCoverByTitle("Hollow Knight");
+
+    expect(result).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("retorna null quando o SGDB não acha nenhum jogo", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ data: [] }),
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await findFirstCoverByTitle("JogoQueNaoExiste123");
+
+    expect(result).toBeNull();
+  });
+});

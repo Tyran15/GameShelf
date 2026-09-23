@@ -13,6 +13,8 @@ export type RawgGame = {
   averagePlaytime: number;
   genres: string[];
   platforms: string[];
+  /** Capa 2:3 do SteamGridDB. null se não encontrada. */
+  sgdbCoverUrl: string | null;
 };
 
 type RawgSearchResponse = {
@@ -26,8 +28,10 @@ export function useRawgSearch(query: string, enabled: boolean) {
   return useQuery({
     queryKey: ["rawg-search", trimmed],
     queryFn: () =>
-      request<RawgSearchResponse>("/rawg/search", { query: { q: trimmed } }),
+      request<RawgSearchResponse>("/rawg/search-with-covers", {
+        query: { q: trimmed },
+      }),
     enabled: canSearch,
-    staleTime: 1000 * 60 * 60, // 1 hora
+    staleTime: 1000 * 60 * 60,
   });
 }

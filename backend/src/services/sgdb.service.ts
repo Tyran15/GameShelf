@@ -1,8 +1,10 @@
 const SGDB_BASE_URL = "https://www.steamgriddb.com/api/v2";
-const CACHE_TTL_MS = 1000 * 60 * 60 * 24; // 24 horas
+const CACHE_TTL_MS = 1000 * 60 * 60 * 24;
 const MIN_QUERY_LENGTH = 3;
 const MAX_CACHE_SIZE = 100;
-const COVER_DIMENSIONS = "600x900"; // 2:3, formato dos cards do GameShelf
+const COVER_DIMENSIONS = "600x900";
+const COVER_FETCH_TIMEOUT_MS = 5000;
+
 
 type SgdbSearchGame = {
   id: number;
@@ -180,4 +182,87 @@ export async function getCoversByGameId(
   setCache(coversCache, gameId, normalized);
 
   return normalized;
+}
+
+function normalizeTitle(title: string): string {
+  return title.toLowerCase().replace(/[^a-z0-9]/g, "").trim();
+}
+
+function titlesMatch(a: string, b: string): boolean {
+  const na = normalizeTitle(a);
+  const nb = normalizeTitle(b);
+  if (!na || !nb) return false;
+  return na === nb || na.includes(nb) || nb.includes(na);
+}
+
+async function fetchWithTimeout(
+  url: string,
+  init: RequestInit,
+  timeoutMs = COVER_FETCH_TIMEOUT_MS
+): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Busca a melhor capa 2:3 (maior score) para um título.
+ * Retorna null se não encontrar nada compatível.
+ * Nunca lança erro — falhas são silenciosas (fallback pro frontend).
+ */
+export async function findFirstCoverByTitle(
+  title: string
+): Promise<string | null> {
+  if (!title.trim()) return null;
+
+  try {
+    const apiKey = process.env.STEAMGRIDDB_API_KEY;
+    if (!apiKey) return null;
+
+    // 1. Busca o jogo pelo título
+    const searchUrl = `https://www.steamgriddb.com/api/v2/search/autocomplete/${encodeURIComponent(
+      title
+    )}`;
+
+    const searchRes = await fetchWithTimeout(searchUrl, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
+
+    if (!searchRes.ok) return null;
+
+    const searchData = (await searchRes.json()) as {
+      data?: { id: number; name: string }[];
+    };
+
+    // 2. Encontra o primeiro resultado com título compatível
+    const matched = (searchData.data ?? []).find((g) =>
+      titlesMatch(g.name, title)
+    );
+
+    if (!matched) return null;
+
+    // 3. Busca as capas 2:3 estáticas
+    const coversUrl = `https://www.steamgriddb.com/api/v2/grids/game/${matched.id}?dimensions=600x900&types=static`;
+
+    const coversRes = await fetchWithTimeout(coversUrl, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
+
+    if (!coversRes.ok) return null;
+
+    const coversData = (await coversRes.json()) as {
+      data?: { url: string; score: number }[];
+    };
+
+    const covers = (coversData.data ?? []).sort((a, b) => b.score - a.score);
+
+    return covers[0]?.url ?? null;
+  } catch {
+    return null;
+  }
 }

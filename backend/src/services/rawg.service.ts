@@ -1,3 +1,5 @@
+import { findFirstCoverByTitle } from "./sgdb.service";
+
 const RAWG_BASE_URL = "https://api.rawg.io/api/games";
 const CACHE_TTL_MS = 1000 * 60 * 60; // 1 hora
 const MIN_QUERY_LENGTH = 3;
@@ -178,4 +180,27 @@ export async function getGameDetails(id: number): Promise<GameDetails> {
   setCache(detailsCache, id, details);
 
   return details;
+}
+
+export type NormalizedGameWithCover = NormalizedGame & {
+  /** Capa 2:3 do SteamGridDB. null se não encontrar. */
+  sgdbCoverUrl: string | null;
+};
+
+const MAX_RESULTS_WITH_COVERS = 6;
+
+export async function searchGamesWithCovers(
+  query: string
+): Promise<NormalizedGameWithCover[]> {
+  const games = await searchGames(query);
+  const limited = games.slice(0, MAX_RESULTS_WITH_COVERS);
+
+  const enriched = await Promise.all(
+    limited.map(async (game) => {
+      const sgdbCoverUrl = await findFirstCoverByTitle(game.title);
+      return { ...game, sgdbCoverUrl };
+    })
+  );
+
+  return enriched;
 }

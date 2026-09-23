@@ -133,6 +133,10 @@ function RawgGameItem({
   const year = game.releaseDate ? game.releaseDate.slice(0, 4) : null;
   const genres = game.genres.slice(0, 3);
 
+  // Prefere a capa 2:3 do SteamGridDB, cai pra do RAWG se não tiver
+  const cover = game.sgdbCoverUrl ?? game.coverUrl;
+  const coverIsVertical = !!game.sgdbCoverUrl;
+
   return (
     <li>
       <button
@@ -140,12 +144,17 @@ function RawgGameItem({
         onClick={onSelect}
         className="flex w-full items-center gap-3 rounded-lg border border-border p-2 text-left transition-colors hover:bg-accent"
       >
-        <div className="aspect-[16/24] w-12 shrink-0 overflow-hidden rounded bg-secondary">
-          {game.coverUrl ? (
+        <div
+          className={`${
+            coverIsVertical ? "aspect-[2/3]" : "aspect-[16/24]"
+          } w-12 shrink-0 overflow-hidden rounded bg-secondary`}
+        >
+          {cover ? (
             <img
-              src={game.coverUrl}
+              src={cover}
               alt=""
               className="size-full object-cover"
+              loading="lazy"
             />
           ) : (
             <div className="flex size-full items-center justify-center text-muted-foreground">
