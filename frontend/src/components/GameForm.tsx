@@ -131,7 +131,6 @@ export function GameForm({
       ...prev,
       title: details.title || prev.title,
       description: details.description ?? prev.description,
-      coverUrl: details.coverUrl ?? prev.coverUrl,
       releaseDate: details.releaseDate
         ? details.releaseDate.slice(0, 10)
         : prev.releaseDate,
