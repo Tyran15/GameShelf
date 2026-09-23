@@ -23,9 +23,9 @@
 
 O **GameShelf** é uma aplicação web full stack desenvolvida para gerenciamento de uma biblioteca pessoal de jogos.
 
-A aplicação permite cadastrar, organizar, pesquisar e filtrar jogos por **plataforma, gênero e status**, além de acompanhar informações como avaliação, horas jogadas, data de lançamento e descrição.
+A aplicação permite cadastrar, organizar, pesquisar e filtrar jogos por **plataforma, gênero e status**, além de acompanhar informações como avaliação, horas jogadas, data de lançamento e descrição. O cadastro conta com auto-preenchimento de metadados via **RAWG** e seleção de capas via **SteamGridDB**.
 
-O projeto foi desenvolvido como um projeto de estudo e portfólio, com foco em **desenvolvimento Full Stack, APIs REST, integração entre frontend e backend, banco de dados relacional, testes automatizados e boas práticas de organização de código**.
+O projeto foi desenvolvido como um projeto de estudo e portfólio, com foco em **desenvolvimento Full Stack, APIs REST, integração entre frontend e backend, integração com APIs externas, banco de dados relacional, testes automatizados e boas práticas de organização de código**.
 
 **Demo:** https://game-shelf-smoky.vercel.app/
 
@@ -51,6 +51,8 @@ O projeto foi desenvolvido como um projeto de estudo e portfólio, com foco em *
 * [x] Definir status de progresso
 * [x] Registrar data de lançamento
 * [x] Registrar horas jogadas (com uma casa decimal)
+* [x] Auto-preenchimento de metadados via RAWG (título, capa, data, descrição, gêneros e plataformas sugeridos)
+* [x] Seleção de capa via SteamGridDB (busca por jogo ou URL manual)
 
 ### 🕹️ Plataformas
 
@@ -139,6 +141,11 @@ O projeto foi desenvolvido como um projeto de estudo e portfólio, com foco em *
 * Prisma ORM
 * Zod
 
+### Integrações externas
+
+* RAWG API — metadados de jogos (título, capa, data, descrição, gêneros e plataformas)
+* SteamGridDB API — capas verticais (2:3)
+
 ### Banco de dados
 
 * PostgreSQL 17
@@ -168,7 +175,7 @@ O projeto foi desenvolvido como um projeto de estudo e portfólio, com foco em *
 
 ## 🏗️ Arquitetura
 
-O projeto utiliza uma arquitetura separando frontend e backend através de uma API REST.
+O projeto utiliza uma arquitetura separando frontend e backend através de uma API REST. O backend também atua como *proxy* para as APIs externas (RAWG e SteamGridDB), mantendo as chaves de API fora do frontend e aplicando cache em memória.
 
 ```text
 ┌──────────────────────────┐
@@ -179,11 +186,13 @@ O projeto utiliza uma arquitetura separando frontend e backend através de uma A
              │
              │ HTTP / REST API
              ▼
-┌──────────────────────────┐
-│         Backend          │
-│ Express + TypeScript     │
+┌──────────────────────────┐         ┌──────────────────────────┐
+│         Backend          │────────▶│      RAWG API             │
+│ Express + TypeScript     │         └──────────────────────────┘
 │ Zod + Prisma             │
-└────────────┬─────────────┘
+│                          │────────▶┌──────────────────────────┐
+│                          │         │    SteamGridDB API        │
+└────────────┬─────────────┘         └──────────────────────────┘
              │
              │ Prisma ORM
              ▼
@@ -358,6 +367,24 @@ GET /api/games?status=PLAYING&platformId=1&genreId=2
 | PUT    | `/api/genres/:id` | Atualiza um gênero |
 | DELETE | `/api/genres/:id` | Exclui um gênero   |
 
+### RAWG
+
+Endpoints que atuam como *proxy* para a [RAWG API](https://rawg.io), usados para auto-preenchimento de metadados no formulário de jogo. As respostas ficam em cache em memória por 1 hora.
+
+| Método | Endpoint            | Descrição                                  |
+| ------ | ------------------- | ------------------------------------------- |
+| GET    | `/api/rawg/search`      | Busca jogos na RAWG por título (`?q=`)  |
+| GET    | `/api/rawg/games/:id`   | Busca detalhes de um jogo (com descrição) |
+
+### SteamGridDB
+
+Endpoints que atuam como *proxy* para a [SteamGridDB API](https://www.steamgriddb.com), usados na seleção de capas verticais (2:3) no formulário de jogo. As respostas ficam em cache em memória por 24 horas.
+
+| Método | Endpoint                      | Descrição                             |
+| ------ | ------------------------------ | -------------------------------------- |
+| GET    | `/api/sgdb/search`             | Busca jogos no SteamGridDB (`?q=`) |
+| GET    | `/api/sgdb/games/:id/covers`   | Lista capas 2:3 de um jogo              |
+
 ### Health Check
 
 ```http
@@ -370,17 +397,19 @@ GET /api/health
 
 O projeto utiliza **Vitest** para testes unitários.
 
-Atualmente existem **50 testes automatizados**:
+Atualmente existem **67 testes automatizados**:
 
 | Módulo            | Testes |
 | ----------------- | -----: |
-| `game.schema`     |     14 |
-| `game.service`    |     14 |
-| `platform.schema` |     11 |
-| `genre.schema`    |     11 |
-| **Total**         | **50** |
+| `game.schema`      |     14 |
+| `game.service`     |     14 |
+| `platform.schema`  |     11 |
+| `genre.schema`     |     11 |
+| `rawg.service`     |      6 |
+| `sgdb.service`     |     11 |
+| **Total**          | **67** |
 
-Os testes cobrem principalmente regras de validação e comportamento dos serviços do backend.
+Os testes cobrem principalmente regras de validação e comportamento dos serviços do backend, incluindo cache em memória, normalização de dados e tratamento de erros das integrações com RAWG e SteamGridDB.
 
 ---
 
@@ -431,7 +460,11 @@ Configure o arquivo `.env`:
 
 ```env
 DATABASE_URL="postgresql://gameshelf:gameshelf@localhost:5432/gameshelf"
+RAWG_API_KEY="sua_chave_da_rawg"
+STEAMGRIDDB_API_KEY="sua_chave_do_steamgriddb"
 ```
+
+> As chaves da RAWG e do SteamGridDB são opcionais para rodar o projeto localmente, mas necessárias para o auto-preenchimento de metadados e a seleção de capas no formulário de jogo. Obtenha as suas em [rawg.io/apidocs](https://rawg.io/apidocs) e [steamgriddb.com/profile/preferences/api](https://www.steamgriddb.com/profile/preferences/api).
 
 Execute as migrations:
 
@@ -503,8 +536,8 @@ npm run dev
 * [ ] Wishlist avançada
 * [ ] Reviews
 * [ ] Dashboard e estatísticas avançadas
-* [ ] Integração com RAWG
-* [ ] Integração com SteamGridDB
+* [x] Integração com RAWG
+* [x] Integração com SteamGridDB
 * [ ] Integração com Steam
 * [ ] Integração com IGDB
 
@@ -542,6 +575,8 @@ Durante o desenvolvimento do GameShelf foram trabalhados conceitos como:
 * Tratamento de erros
 * Arquitetura de aplicações
 * Integração frontend/backend
+* Integração com APIs externas (RAWG, SteamGridDB)
+* Cache em memória
 * Git e GitHub
 * Design responsivo
 * Tema claro e escuro
