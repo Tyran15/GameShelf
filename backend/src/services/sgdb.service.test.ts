@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { vi } from "vitest";
+import {
+  findFirstCoverByTitle,
+  findHeroesByTitle,
+} from "./sgdb.service";
 
 const SGDB_API_KEY = "test-api-key";
 
@@ -325,5 +329,55 @@ describe("findFirstCoverByTitle", () => {
     const result = await findFirstCoverByTitle("JogoQueNaoExiste123");
 
     expect(result).toBeNull();
+  });
+});
+
+describe("findHeroesByTitle", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    process.env.STEAMGRIDDB_API_KEY = "test-key";
+  });
+
+  it("retorna heroes ordenados por score", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: [{ id: 123, name: "Hollow Knight" }] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [
+            { url: "https://cdn/h-low.jpg", thumb: "https://cdn/t-low.jpg", score: 5 },
+            { url: "https://cdn/h-high.jpg", thumb: "https://cdn/t-high.jpg", score: 90 },
+          ],
+        }),
+      });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await findHeroesByTitle("Hollow Knight");
+
+    expect(result).toHaveLength(2);
+    expect(result[0].url).toBe("https://cdn/h-high.jpg");
+  });
+
+  it("retorna lista vazia quando título não bate", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ data: [{ id: 999, name: "Outro Jogo" }] }),
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    expect(await findHeroesByTitle("Hollow Knight")).toEqual([]);
+  });
+
+  it("retorna lista vazia quando SGDB retorna erro HTTP", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce({ ok: false, status: 500 });
+    vi.stubGlobal("fetch", fetchMock);
+
+    expect(await findHeroesByTitle("Hollow Knight")).toEqual([]);
   });
 });

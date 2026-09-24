@@ -3,6 +3,7 @@ import {
   Loader2,
   ImageOff,
   Image as ImageIcon,
+  ImagePlus,
   Sparkles,
   Plus,
 } from "lucide-react";
@@ -20,6 +21,7 @@ import {
 import { RawgSearchModal } from "@/components/RawgSearchModal";
 import { CreateEntityModal } from "@/components/CreateEntityModal";
 import { CoverSelectorModal } from "@/components/CoverSelectorModal";
+import { BackgroundSelectorModal } from "@/components/BackgroundSelectorModal";
 import type { RawgGame } from "@/hooks/useRawgSearch";
 import { useRawgGameDetails } from "@/hooks/useRawgGameDetails";
 import { useCreatePlatform, usePlatforms } from "@/hooks/usePlatforms";
@@ -36,6 +38,7 @@ type FormState = {
   title: string;
   description: string;
   coverUrl: string;
+  backgroundUrl: string;
   releaseDate: string;
   status: GameStatus;
   rating: string;
@@ -57,6 +60,7 @@ function initialState(game?: Game): FormState {
     title: game?.title ?? "",
     description: game?.description ?? "",
     coverUrl: game?.coverUrl ?? "",
+    backgroundUrl: game?.backgroundUrl ?? "",
     releaseDate: game?.releaseDate ? game.releaseDate.slice(0, 10) : "",
     status,
     rating: isWishlist
@@ -103,11 +107,13 @@ export function GameForm({
   const [form, setForm] = useState<FormState>(() => initialState(game));
   const [localErrors, setLocalErrors] = useState<Record<string, string>>({});
   const [coverError, setCoverError] = useState(false);
+  const [backgroundError, setBackgroundError] = useState(false);
   const [rawgModalOpen, setRawgModalOpen] = useState(false);
   const [selectedRawgId, setSelectedRawgId] = useState<number | null>(null);
   const [rawgSuggestions, setRawgSuggestions] =
     useState<RawgSuggestions | null>(null);
   const [coverModalOpen, setCoverModalOpen] = useState(false);
+  const [bgModalOpen, setBgModalOpen] = useState(false);
 
   const [platformModalOpen, setPlatformModalOpen] = useState(false);
   const [platformInitialName, setPlatformInitialName] = useState("");
@@ -163,9 +169,17 @@ export function GameForm({
     set("coverUrl", url);
   }
 
+  function handleBackgroundSelect(url: string) {
+    set("backgroundUrl", url);
+  }
+
   useEffect(() => {
     setCoverError(false);
   }, [form.coverUrl]);
+
+  useEffect(() => {
+    setBackgroundError(false);
+  }, [form.backgroundUrl]);
 
   const errorFor = (field: string) =>
     localErrors[field] ?? fieldErrors?.[field]?.[0];
@@ -191,7 +205,6 @@ export function GameForm({
   const hasPlatformSuggestions =
     rawgSuggestions !== null && rawgSuggestions.platforms.length > 0;
 
-  // Auto-seleciona a primeira plataforma com match
   useEffect(() => {
     if (!rawgSuggestions || form.platformId) return;
     const firstMatch = platformBadges.find((b) => b.matchedId !== null);
@@ -219,7 +232,6 @@ export function GameForm({
   const hasGenreSuggestions =
     rawgSuggestions !== null && rawgSuggestions.genres.length > 0;
 
-  // Auto-seleciona o primeiro gênero com match
   useEffect(() => {
     if (!rawgSuggestions || form.genreId) return;
     const firstMatch = genreBadges.find((b) => b.matchedId !== null);
@@ -229,7 +241,6 @@ export function GameForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [genreBadges, rawgSuggestions, form.genreId]);
 
-  // --------- Criar plataforma via modal ---------
   async function handleCreatePlatform(name: string) {
     setPlatformError(null);
     try {
@@ -250,23 +261,21 @@ export function GameForm({
     setPlatformModalOpen(true);
   }
 
-  // --------- Criar plataforma direto do badge ---------
   async function handleCreatePlatformFromBadge(name: string) {
     try {
       const created = await createPlatform.mutateAsync({ name });
       set("platformId", String(created.id));
     } catch {
-      // silencioso — o usuário pode usar o select fallback
+      // silencioso
     }
   }
 
-  // --------- Criar gênero direto do badge ---------
   async function handleCreateGenreFromBadge(name: string) {
     try {
       const created = await createGenre.mutateAsync({ name });
       set("genreId", String(created.id));
     } catch {
-      // silencioso — o usuário pode usar o select fallback
+      // silencioso
     }
   }
 
@@ -283,6 +292,9 @@ export function GameForm({
         ? "10"
         : Number(form.rating).toFixed(1)
       : null;
+
+  const hasBackground =
+    form.backgroundUrl.trim().length > 0 && !backgroundError;
 
   function handleStatusChange(newStatus: GameStatus) {
     setForm((prev) => {
@@ -358,6 +370,8 @@ export function GameForm({
     };
     if (form.description.trim()) payload.description = form.description.trim();
     if (form.coverUrl.trim()) payload.coverUrl = form.coverUrl.trim();
+    if (form.backgroundUrl.trim())
+      payload.backgroundUrl = form.backgroundUrl.trim();
     if (form.releaseDate)
       payload.releaseDate = `${form.releaseDate}T00:00:00.000Z`;
 
@@ -376,9 +390,23 @@ export function GameForm({
 
   return (
     <>
+      {hasBackground ? (
+        <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+          <img
+            src={form.backgroundUrl.trim()}
+            alt=""
+            aria-hidden="true"
+            className="size-full scale-105 object-cover blur-sm"
+            onError={() => setBackgroundError(true)}
+            onLoad={() => setBackgroundError(false)}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/70 to-background/90" />
+        </div>
+      ) : null}
+
       <form
         onSubmit={handleSubmit}
-        className="grid gap-6 lg:grid-cols-[220px_minmax(0,33vw)] lg:items-start"
+        className="relative z-10 grid gap-6 p-4 sm:p-6 lg:grid-cols-[220px_minmax(0,33vw)] lg:items-start"
       >
         <aside className="mx-auto w-full max-w-[220px] lg:mx-0">
           <div className="lg:sticky lg:top-6">
@@ -386,7 +414,7 @@ export function GameForm({
               Pré-visualização
             </p>
 
-            <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-card">
+            <div className="overflow-hidden rounded-2xl border border-border bg-surface/80 shadow-card backdrop-blur-md">
               <div className="relative aspect-[2/3] w-full overflow-hidden bg-secondary">
                 {form.coverUrl.trim() && !coverError ? (
                   <>
@@ -450,7 +478,7 @@ export function GameForm({
           </div>
         </aside>
 
-        <div className="grid w-full gap-4 rounded-2xl border border-border bg-surface p-5 shadow-card md:p-6">
+        <div className="grid w-full gap-4 rounded-2xl border border-border bg-surface/70 p-5 shadow-card backdrop-blur-md md:p-6">
           <div className="grid gap-2">
             <Label htmlFor="title" className="text-sm">
               Título *
@@ -561,6 +589,44 @@ export function GameForm({
               <FieldError message={errorFor("releaseDate")} />
             </div>
           </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="backgroundUrl" className="text-sm">
+              URL do background
+              <span className="ml-2 text-xs font-normal text-muted-foreground">
+                (opcional — aparece como fundo na página de detalhes)
+              </span>
+            </Label>
+            <div className="flex gap-2">
+              <Input
+                id="backgroundUrl"
+                value={form.backgroundUrl}
+                onChange={(e) => set("backgroundUrl", e.target.value)}
+                placeholder="https://..."
+                className="h-11"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="h-11 w-11 shrink-0"
+                title="Buscar background no SteamGridDB"
+                aria-label="Buscar background no SteamGridDB"
+                onClick={() => setBgModalOpen(true)}
+              >
+                <ImagePlus className="size-4" />
+              </Button>
+            </div>
+            <FieldError message={errorFor("backgroundUrl")} />
+          </div>
+
+          <BackgroundSelectorModal
+            title={form.title}
+            currentUrl={form.backgroundUrl}
+            open={bgModalOpen}
+            onOpenChange={setBgModalOpen}
+            onSelect={handleBackgroundSelect}
+          />
 
           <div className={`grid gap-5 ${isWishlist ? "" : "md:grid-cols-3"}`}>
             <div className="grid gap-2">
@@ -923,7 +989,11 @@ export function GameForm({
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={isSubmitting} className="h-11 px-5">
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="h-11 px-5"
+            >
               {isSubmitting ? (
                 <Loader2 className="size-5 animate-spin" />
               ) : null}

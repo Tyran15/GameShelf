@@ -19,6 +19,7 @@ model Game {
   title       String
   description String?
   coverUrl    String?
+  backgroundUrl String?
   releaseDate DateTime?
   status      GameStatus @default(WISHLIST)
   rating      Float?
