@@ -26,6 +26,7 @@ import type { RawgGame } from "@/hooks/useRawgSearch";
 import { useRawgGameDetails } from "@/hooks/useRawgGameDetails";
 import { useCreatePlatform, usePlatforms } from "@/hooks/usePlatforms";
 import { useCreateGenre, useGenres } from "@/hooks/useGenres";
+import { HeroBackground } from "@/components/HeroBackground";
 import {
   GAME_STATUSES,
   GAME_STATUS_LABELS,
@@ -390,24 +391,13 @@ export function GameForm({
 
   return (
     <>
-      {hasBackground ? (
-        <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-          <img
-            src={form.backgroundUrl.trim()}
-            alt=""
-            aria-hidden="true"
-            className="size-full scale-105 object-cover blur-sm"
-            onError={() => setBackgroundError(true)}
-            onLoad={() => setBackgroundError(false)}
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/70 to-background/90" />
-        </div>
-      ) : null}
+      <HeroBackground
+        url={hasBackground ? form.backgroundUrl.trim() : null}
+        onError={() => setBackgroundError(true)}
+        onLoad={() => setBackgroundError(false)}
+      />
 
-      <form
-        onSubmit={handleSubmit}
-        className="relative z-10 grid gap-6 p-4 sm:p-6 lg:grid-cols-[220px_minmax(0,33vw)] lg:items-start"
-      >
+      <form onSubmit={handleSubmit} className="relative z-10 grid gap-6 p-4 sm:p-6 lg:grid-cols-[220px_minmax(0,33vw)] lg:items-start">
         <aside className="mx-auto w-full max-w-[220px] lg:mx-0">
           <div className="lg:sticky lg:top-6">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -534,8 +524,7 @@ export function GameForm({
               onChange={(e) => set("description", e.target.value)}
               rows={3}
               placeholder="Anotações sobre o jogo..."
-              className="min-h-[80px]"
-            />
+              className="min-h-[80px] scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" />
             <FieldError message={errorFor("description")} />
           </div>
 

@@ -99,7 +99,7 @@ export function GameDetailsPage() {
   }
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] w-full">
+    <div className="absolute inset-0 z-0 m-0! overflow-hidden">
       {/* Background full-width, atrás de tudo */}
       <HeroBackground url={game.backgroundUrl} />
 

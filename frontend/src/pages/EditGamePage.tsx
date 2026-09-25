@@ -12,7 +12,7 @@ export function EditGamePage({ id }: { id: number }) {
   const updateGame = useUpdateGame(id);
 
   return (
-    <div className="page-shell max-w-3xl space-y-6">
+    <div className="page-shell flex max-w-3xl flex-1 flex-col space-y-6">
       <Link
         to="/games/$id"
         params={{ id: String(id) }}
