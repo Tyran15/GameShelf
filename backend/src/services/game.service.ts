@@ -12,6 +12,7 @@ export interface CreateGameInput {
   title: string;
   description?: string;
   coverUrl?: string;
+  backgroundUrl?: string;
   releaseDate?: Date | string;
   status?: GameStatus;
   rating?: number | null;
@@ -80,6 +81,7 @@ export interface UpdateGameInput {
   title?: string;
   description?: string;
   coverUrl?: string;
+  backgroundUrl?: string;
   releaseDate?: Date | string;
   status?: GameStatus;
   rating?: number | null;

@@ -24,6 +24,7 @@ export interface Game {
   title: string;
   description: string | null;
   coverUrl: string | null;
+  backgroundUrl: string | null;
   releaseDate: string | null;
   status: GameStatus;
   rating: number | null;
@@ -40,6 +41,7 @@ export interface GameInput {
   title: string;
   description?: string;
   coverUrl?: string;
+  backgroundUrl?: string;
   releaseDate?: string;
   status?: GameStatus;
   rating?: number;

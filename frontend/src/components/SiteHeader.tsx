@@ -22,7 +22,7 @@ export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-border bg-background">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-3">
         {/* Logo */}
         <Link to="/" className="flex shrink-0 items-center gap-2">

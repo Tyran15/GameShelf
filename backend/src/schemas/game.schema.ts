@@ -7,6 +7,8 @@ export const createGameSchema = z.object({
 
   coverUrl: z.string().optional(),
 
+  backgroundUrl: z.string().url().optional(),
+
   releaseDate: z.string().optional(),
 
   status: z
@@ -19,12 +21,12 @@ export const createGameSchema = z.object({
     ])
     .optional(),
 
-    rating: z
-      .number()
-      .min(0)
-      .max(10)   
-      .nullable()
-      .optional(),
+  rating: z
+    .number()
+    .min(0)
+    .max(10)
+    .nullable()
+    .optional(),
 
   // Aceita número, string numérica ("12.5"), null (limpar) ou ausente (não mexer).
   // "" é tratado como null antes da validação, para não virar 0 por coerção.

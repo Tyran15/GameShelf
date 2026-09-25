@@ -49,6 +49,12 @@ export type NormalizedCover = {
   author: string;
 };
 
+export type NormalizedHero = {
+  url: string;
+  thumbUrl: string;
+  score: number;
+};
+
 type CacheEntry<T> = {
   data: T;
   expiresAt: number;
@@ -56,6 +62,7 @@ type CacheEntry<T> = {
 
 const searchCache = new Map<string, CacheEntry<NormalizedSgdbGame[]>>();
 const coversCache = new Map<number, CacheEntry<NormalizedCover[]>>();
+const heroesCache = new Map<string, CacheEntry<NormalizedHero[]>>();
 
 function normalizeSearchGame(raw: SgdbSearchGame): NormalizedSgdbGame {
   return {
@@ -264,5 +271,60 @@ export async function findFirstCoverByTitle(
     return covers[0]?.url ?? null;
   } catch {
     return null;
+  }
+}
+
+export async function findHeroesByTitle(
+  title: string
+): Promise<NormalizedHero[]> {
+  if (!title.trim()) return [];
+
+  const cacheKey = normalizeTitle(title);
+  const cached = getFromCache(heroesCache, cacheKey);
+  if (cached) return cached;
+
+  try {
+    const apiKey = process.env.STEAMGRIDDB_API_KEY;
+    if (!apiKey) return [];
+
+    const searchUrl = `https://www.steamgriddb.com/api/v2/search/autocomplete/${encodeURIComponent(
+      title
+    )}`;
+
+    const searchRes = await fetchWithTimeout(searchUrl, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
+
+    if (!searchRes.ok) return [];
+
+    const searchData = (await searchRes.json()) as {
+      data?: { id: number; name: string }[];
+    };
+
+    const matched = (searchData.data ?? []).find((g) =>
+      titlesMatch(g.name, title)
+    );
+
+    if (!matched) return [];
+
+    const heroesRes = await fetchWithTimeout(
+      `https://www.steamgriddb.com/api/v2/heroes/game/${matched.id}`,
+      { headers: { Authorization: `Bearer ${apiKey}` } }
+    );
+
+    if (!heroesRes.ok) return [];
+
+    const heroesData = (await heroesRes.json()) as {
+      data?: { url: string; thumb: string; score: number }[];
+    };
+
+    const heroes = (heroesData.data ?? [])
+      .map((h) => ({ url: h.url, thumbUrl: h.thumb, score: h.score }))
+      .sort((a, b) => b.score - a.score);
+
+    setCache(heroesCache, cacheKey, heroes);
+    return heroes;
+  } catch {
+    return [];
   }
 }
