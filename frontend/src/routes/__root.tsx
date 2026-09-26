@@ -156,7 +156,7 @@ function RootComponent() {
           <main className="relative isolate flex flex-1 flex-col">
             <Outlet />
           </main>
-          <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
+          <footer className="relative z-10 border-t border-border bg-background py-6 text-center text-xs text-muted-foreground">
             GameShelf · biblioteca pessoal de jogos
           </footer>
         </div>
