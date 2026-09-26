@@ -240,11 +240,6 @@ describe("getCoversByGameId", () => {
   });
 });
 
-import {
-  findFirstCoverByTitle,
-  searchGames,
-} from "./sgdb.service";
-
 describe("findFirstCoverByTitle", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -335,7 +330,12 @@ describe("findFirstCoverByTitle", () => {
 describe("findHeroesByTitle", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    vi.resetModules();
     process.env.STEAMGRIDDB_API_KEY = "test-key";
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it("retorna heroes ordenados por score", async () => {
@@ -357,6 +357,7 @@ describe("findHeroesByTitle", () => {
 
     vi.stubGlobal("fetch", fetchMock);
 
+    const { findHeroesByTitle } = await loadService();
     const result = await findHeroesByTitle("Hollow Knight");
 
     expect(result).toHaveLength(2);
@@ -371,12 +372,16 @@ describe("findHeroesByTitle", () => {
 
     vi.stubGlobal("fetch", fetchMock);
 
+    const { findHeroesByTitle } = await loadService();
+
     expect(await findHeroesByTitle("Hollow Knight")).toEqual([]);
   });
 
   it("retorna lista vazia quando SGDB retorna erro HTTP", async () => {
     const fetchMock = vi.fn().mockResolvedValueOnce({ ok: false, status: 500 });
     vi.stubGlobal("fetch", fetchMock);
+
+    const { findHeroesByTitle } = await loadService();
 
     expect(await findHeroesByTitle("Hollow Knight")).toEqual([]);
   });
