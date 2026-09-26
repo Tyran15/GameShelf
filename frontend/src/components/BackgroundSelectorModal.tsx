@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ImageOff } from "lucide-react";
+import { ImageOff, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { request } from "@/services/api";
-import { useRawgSearch } from "@/hooks/useRawgSearch";
 
 type Hero = { url: string; thumbUrl: string; score: number };
 
@@ -40,35 +39,41 @@ export function BackgroundSelectorModal({
     staleTime: 1000 * 60 * 60 * 24,
   });
 
-  const rawgQuery = useRawgSearch(title, open);
-
   function select(url: string) {
     onSelect(url);
     onOpenChange(false);
   }
 
-  const rawgOptions =
-    rawgQuery.data?.games?.filter((g) => g.coverUrl).slice(0, 6) ?? [];
+  function handleClear() {
+    onSelect("");
+    onOpenChange(false);
+  }
+
+  const hasCurrent = !!currentUrl && currentUrl.trim().length > 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="flex max-h-[85vh] flex-col gap-4 overflow-hidden sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Escolher background — {title}</DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="sgdb">
-          <TabsList className="mb-4">
+        <Tabs defaultValue="sgdb" className="flex min-h-0 flex-1 flex-col">
+          <TabsList className="mb-4 grid grid-cols-2">
             <TabsTrigger value="sgdb">SteamGridDB</TabsTrigger>
-            <TabsTrigger value="rawg">RAWG</TabsTrigger>
-            <TabsTrigger value="url">URL</TabsTrigger>
+            <TabsTrigger value="url">Por URL</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="sgdb">
+          <TabsContent value="sgdb" className="flex-1 overflow-y-auto">
             <div className="grid grid-cols-2 gap-2">
               {heroesQuery.isLoading && (
                 <p className="col-span-2 text-sm text-muted-foreground">
                   Carregando...
+                </p>
+              )}
+              {heroesQuery.isError && (
+                <p className="col-span-2 text-sm text-destructive">
+                  Não foi possível buscar backgrounds no SteamGridDB.
                 </p>
               )}
               {heroesQuery.data?.heroes.map((h) => (
@@ -99,37 +104,7 @@ export function BackgroundSelectorModal({
             </div>
           </TabsContent>
 
-          <TabsContent value="rawg">
-            <div className="grid grid-cols-2 gap-2">
-              {rawgOptions.map((g) => (
-                <button
-                  key={g.rawgId}
-                  type="button"
-                  onClick={() => g.coverUrl && select(g.coverUrl)}
-                  className={`overflow-hidden rounded-lg border transition hover:ring-2 hover:ring-accent ${
-                    currentUrl === g.coverUrl
-                      ? "ring-2 ring-primary"
-                      : "border-border"
-                  }`}
-                >
-                  <img
-                    src={g.coverUrl!}
-                    alt={g.title}
-                    className="w-full object-cover"
-                    loading="lazy"
-                  />
-                </button>
-              ))}
-              {rawgQuery.isSuccess && rawgOptions.length === 0 && (
-                <p className="col-span-2 flex items-center gap-2 text-sm text-muted-foreground">
-                  <ImageOff className="size-4" />
-                  RAWG não retornou backgrounds.
-                </p>
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="url">
+          <TabsContent value="url" className="flex-1">
             <div className="flex gap-2">
               <Input
                 value={customUrl}
@@ -145,6 +120,35 @@ export function BackgroundSelectorModal({
             </div>
           </TabsContent>
         </Tabs>
+
+        <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
+          <p className="truncate text-xs text-muted-foreground">
+            {hasCurrent
+              ? "Há um background definido."
+              : "Nenhum background definido."}
+          </p>
+
+          <div className="flex shrink-0 gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!hasCurrent}
+              onClick={handleClear}
+              className="gap-1.5"
+              title="Remover background atual"
+            >
+              <Trash2 className="size-4" />
+              Remover
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => onOpenChange(false)}
+            >
+              Cancelar
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
