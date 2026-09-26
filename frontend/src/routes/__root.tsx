@@ -8,12 +8,14 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { I18nextProvider } from "react-i18next";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Toaster } from "@/components/ui/sonner";
 import { THEME_INIT_SCRIPT } from "../lib/theme";
+import { resolveServerLocale, getI18nInstance } from "../lib/i18n";
 
 function NotFoundComponent() {
   return (
@@ -59,7 +61,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-accent"
           >
             Try again
           </button>
@@ -75,7 +77,13 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+export const Route = createRootRouteWithContext<{
+  queryClient: QueryClient;
+}>()({
+  beforeLoad: async () => {
+    const { locale } = await resolveServerLocale();
+    return { locale };
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -83,8 +91,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "GameShelf — Biblioteca pessoal de jogos" },
       {
         name: "description",
-        content:
-          "Cadastre, organize e avalie os jogos da sua coleção com o GameShelf.",
+        content: "Cadastre, organize e avalie os jogos da sua coleção com o GameShelf.",
       },
       { property: "og:title", content: "GameShelf" },
       {
@@ -120,8 +127,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  const { locale } = Route.useRouteContext();
+
   return (
-    <html lang="pt-BR">
+    <html lang={locale}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <HeadContent />
@@ -135,21 +144,24 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
+  const { queryClient, locale } = Route.useRouteContext();
+  const i18n = getI18nInstance(locale);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <div className="flex min-h-screen flex-col">
-        <SiteHeader />
-        {/* Adicionamos 'flex flex-col' aqui: */}
-        <main className="relative isolate flex flex-1 flex-col">
-          <Outlet />
-        </main>
-        <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
-          GameShelf · biblioteca pessoal de jogos
-        </footer>
-      </div>
-      <Toaster richColors position="top-right" />
-    </QueryClientProvider>
+    <I18nextProvider i18n={i18n}>
+      <QueryClientProvider client={queryClient}>
+        <div className="flex min-h-screen flex-col">
+          <SiteHeader />
+          {/* Adicionamos 'flex flex-col' aqui: */}
+          <main className="relative isolate flex flex-1 flex-col">
+            <Outlet />
+          </main>
+          <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
+            GameShelf · biblioteca pessoal de jogos
+          </footer>
+        </div>
+        <Toaster richColors position="top-right" />
+      </QueryClientProvider>
+    </I18nextProvider>
   );
 }

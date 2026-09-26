@@ -35,10 +35,13 @@ import {
   type GameStatus,
 } from "@/types/game";
 
+type CoverSource = "rawg" | "manual" | null;
+
 type FormState = {
   title: string;
   description: string;
   coverUrl: string;
+  coverSource: CoverSource;
   backgroundUrl: string;
   releaseDate: string;
   status: GameStatus;
@@ -61,6 +64,7 @@ function initialState(game?: Game): FormState {
     title: game?.title ?? "",
     description: game?.description ?? "",
     coverUrl: game?.coverUrl ?? "",
+    coverSource: game?.coverUrl ? "manual" : null,
     backgroundUrl: game?.backgroundUrl ?? "",
     releaseDate: game?.releaseDate ? game.releaseDate.slice(0, 10) : "",
     status,
@@ -147,14 +151,22 @@ export function GameForm({
   }, [rawgDetails.data]);
 
   function handleRawgSelect(rawgGame: RawgGame) {
-    setForm((prev) => ({
-      ...prev,
-      title: rawgGame.title,
-      coverUrl: rawgGame.sgdbCoverUrl ?? rawgGame.coverUrl ?? prev.coverUrl,
-      releaseDate: rawgGame.releaseDate
-        ? rawgGame.releaseDate.slice(0, 10)
-        : prev.releaseDate,
-    }));
+    setForm((prev) => {
+      const rawgCover = rawgGame.sgdbCoverUrl ?? rawgGame.coverUrl ?? "";
+      const hasManualCover =
+        prev.coverSource === "manual" && prev.coverUrl.trim().length > 0;
+      const shouldOverwrite = !hasManualCover && rawgCover.length > 0;
+
+      return {
+        ...prev,
+        title: rawgGame.title,
+        coverUrl: shouldOverwrite ? rawgCover : prev.coverUrl,
+        coverSource: shouldOverwrite ? "rawg" : prev.coverSource,
+        releaseDate: rawgGame.releaseDate
+          ? rawgGame.releaseDate.slice(0, 10)
+          : prev.releaseDate,
+      };
+    });
 
     if (rawgGame.platforms.length > 0 || rawgGame.genres.length > 0) {
       setRawgSuggestions({
@@ -167,7 +179,11 @@ export function GameForm({
   }
 
   function handleCoverSelect(url: string) {
-    set("coverUrl", url);
+    setForm((prev) => ({ ...prev, coverUrl: url, coverSource: "manual" }));
+  }
+
+  function handleCoverUrlChange(url: string) {
+    setForm((prev) => ({ ...prev, coverUrl: url, coverSource: "manual" }));
   }
 
   function handleBackgroundSelect(url: string) {
@@ -397,7 +413,10 @@ export function GameForm({
         onLoad={() => setBackgroundError(false)}
       />
 
-      <form onSubmit={handleSubmit} className="relative z-10 grid gap-6 p-4 sm:p-6 lg:grid-cols-[220px_minmax(0,33vw)] lg:items-start">
+      <form
+        onSubmit={handleSubmit}
+        className="relative z-10 grid gap-6 p-4 sm:p-6 lg:grid-cols-[220px_minmax(0,33vw)] lg:items-start"
+      >
         <aside className="mx-auto w-full max-w-[220px] lg:mx-0">
           <div className="lg:sticky lg:top-6">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -524,7 +543,8 @@ export function GameForm({
               onChange={(e) => set("description", e.target.value)}
               rows={3}
               placeholder="Anotações sobre o jogo..."
-              className="min-h-[80px] scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" />
+              className="min-h-[80px] scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent"
+            />
             <FieldError message={errorFor("description")} />
           </div>
 
@@ -537,7 +557,7 @@ export function GameForm({
                 <Input
                   id="coverUrl"
                   value={form.coverUrl}
-                  onChange={(e) => set("coverUrl", e.target.value)}
+                  onChange={(e) => handleCoverUrlChange(e.target.value)}
                   placeholder="https://..."
                   className="h-11"
                 />

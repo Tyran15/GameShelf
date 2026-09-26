@@ -14,7 +14,7 @@ export function CreateGamePage() {
     <div className="relative flex w-full flex-col items-center">
       {/* Se o HeroBackground estiver nesta página, ele vai cobrir exatamente este contêiner */}
 
-      <div className="page-shell z-10 w-full max-w-3xl space-y-6 py-8">
+      <div className="page-shell relative z-10 flex max-w-3xl flex-1 flex-col space-y-6">
         <Link
           to="/"
           className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
