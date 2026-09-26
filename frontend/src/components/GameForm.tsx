@@ -499,6 +499,7 @@ export function GameForm({
                 onChange={(e) => set("title", e.target.value)}
                 placeholder="Ex.: Hollow Knight"
                 className="h-11"
+                autoComplete="off"
               />
               <Button
                 type="button"
@@ -560,6 +561,7 @@ export function GameForm({
                   onChange={(e) => handleCoverUrlChange(e.target.value)}
                   placeholder="https://..."
                   className="h-11"
+                  autoComplete="off"
                 />
                 <Button
                   type="button"
@@ -594,6 +596,7 @@ export function GameForm({
                 value={form.releaseDate}
                 onChange={(e) => set("releaseDate", e.target.value)}
                 className="h-11"
+                autoComplete="off"
               />
               <FieldError message={errorFor("releaseDate")} />
             </div>
@@ -613,6 +616,7 @@ export function GameForm({
                 onChange={(e) => set("backgroundUrl", e.target.value)}
                 placeholder="https://..."
                 className="h-11"
+                autoComplete="off"
               />
               <Button
                 type="button"
@@ -674,6 +678,7 @@ export function GameForm({
                     onChange={(e) => handleRatingChange(e.target.value)}
                     placeholder="Ex.: 7.4"
                     className="h-11"
+                    autoComplete="off"
                   />
                   <FieldError message={errorFor("rating")} />
                 </div>
@@ -691,6 +696,7 @@ export function GameForm({
                       onChange={(e) => handleHoursPlayedChange(e.target.value)}
                       placeholder="Ex.: 42.5"
                       className="h-11 pr-9"
+                      autoComplete="off"
                     />
                     <span
                       aria-hidden="true"
