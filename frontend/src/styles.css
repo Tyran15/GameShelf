@@ -177,6 +177,8 @@
 
   html {
     background-color: var(--color-background);
+    scrollbar-color: var(--color-border) transparent;
+    scrollbar-width: thin;
   }
 
   body {

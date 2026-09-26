@@ -23,13 +23,15 @@
 
 O **GameShelf** é uma aplicação web full stack desenvolvida para gerenciamento de uma biblioteca pessoal de jogos.
 
-A aplicação permite cadastrar, organizar, pesquisar e filtrar jogos por **plataforma, gênero e status**, além de acompanhar informações como avaliação, horas jogadas, data de lançamento e descrição. O cadastro conta com auto-preenchimento de metadados via **RAWG** e seleção de capas via **SteamGridDB**.
+A aplicação permite cadastrar, organizar, pesquisar e filtrar jogos por **plataforma, gênero e status**, além de acompanhar informações como avaliação, horas jogadas, data de lançamento e descrição. O cadastro conta com auto-preenchimento de metadados via **RAWG**, seleção de capas e de planos de fundo (backgrounds) via **SteamGridDB**.
 
 O projeto foi desenvolvido como um projeto de estudo e portfólio, com foco em **desenvolvimento Full Stack, APIs REST, integração entre frontend e backend, integração com APIs externas, banco de dados relacional, testes automatizados e boas práticas de organização de código**.
 
 **Demo:** https://game-shelf-smoky.vercel.app/
 
 **Repositório:** https://github.com/Tyran15/GameShelf
+
+**Changelog:** [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
@@ -53,6 +55,9 @@ O projeto foi desenvolvido como um projeto de estudo e portfólio, com foco em *
 * [x] Registrar horas jogadas (com uma casa decimal)
 * [x] Auto-preenchimento de metadados via RAWG (título, capa, data, descrição, gêneros e plataformas sugeridos)
 * [x] Seleção de capa via SteamGridDB (busca por jogo ou URL manual)
+* [x] Seleção de background via SteamGridDB (heroes horizontais)
+* [x] Seleção de background via URL manual
+* [x] Opção de remover background definido
 
 ### 🕹️ Plataformas
 
@@ -280,20 +285,21 @@ Platform
 
 ### Game
 
-| Campo         | Tipo     | Descrição                  |
-| ------------- | -------- | -------------------------- |
-| `id`          | Integer  | Identificador              |
-| `title`       | String   | Nome do jogo               |
-| `description` | String   | Descrição                  |
-| `coverUrl`    | String   | URL da capa                |
-| `releaseDate` | DateTime | Data de lançamento         |
-| `status`      | Enum     | Status do jogo             |
-| `rating`      | Float    | Avaliação pessoal (0 a 10) |
-| `hoursPlayed` | Float    | Horas jogadas              |
-| `platformId`  | Integer  | Plataforma                 |
-| `genreId`     | Integer  | Gênero                     |
-| `createdAt`   | DateTime | Data de criação            |
-| `updatedAt`   | DateTime | Última atualização         |
+| Campo           | Tipo      | Descrição                          |
+| --------------- | --------- | ----------------------------------- |
+| `id`            | Integer   | Identificador                      |
+| `title`         | String    | Nome do jogo                       |
+| `description`   | String?   | Descrição (opcional)               |
+| `coverUrl`      | String?   | URL da capa (opcional)             |
+| `backgroundUrl` | String?   | URL do background (opcional)       |
+| `releaseDate`   | DateTime? | Data de lançamento (opcional)      |
+| `status`        | Enum      | Status do jogo                     |
+| `rating`        | Float?    | Avaliação pessoal (0 a 10, opcional) |
+| `hoursPlayed`   | Float?    | Horas jogadas (opcional)           |
+| `platformId`    | Integer   | Plataforma                         |
+| `genreId`       | Integer   | Gênero                             |
+| `createdAt`     | DateTime  | Data de criação                    |
+| `updatedAt`     | DateTime  | Última atualização                 |
 
 ### Status
 
@@ -378,12 +384,13 @@ Endpoints que atuam como *proxy* para a [RAWG API](https://rawg.io), usados para
 
 ### SteamGridDB
 
-Endpoints que atuam como *proxy* para a [SteamGridDB API](https://www.steamgriddb.com), usados na seleção de capas verticais (2:3) no formulário de jogo. As respostas ficam em cache em memória por 24 horas.
+Endpoints que atuam como *proxy* para a [SteamGridDB API](https://www.steamgriddb.com), usados na seleção de capas verticais (2:3) e de backgrounds horizontais no formulário de jogo. As respostas ficam em cache em memória por 24 horas.
 
 | Método | Endpoint                      | Descrição                             |
 | ------ | ------------------------------ | -------------------------------------- |
 | GET    | `/api/sgdb/search`             | Busca jogos no SteamGridDB (`?q=`) |
 | GET    | `/api/sgdb/games/:id/covers`   | Lista capas 2:3 de um jogo              |
+| GET    | `/api/sgdb/heroes`             | Busca heroes horizontais por título (`?title=`) |
 
 ### Health Check
 
@@ -397,7 +404,7 @@ GET /api/health
 
 O projeto utiliza **Vitest** para testes unitários.
 
-Atualmente existem **67 testes automatizados**:
+Atualmente existem **75 testes automatizados**:
 
 | Módulo            | Testes |
 | ----------------- | -----: |
@@ -406,8 +413,8 @@ Atualmente existem **67 testes automatizados**:
 | `platform.schema`  |     11 |
 | `genre.schema`     |     11 |
 | `rawg.service`     |      6 |
-| `sgdb.service`     |     11 |
-| **Total**          | **67** |
+| `sgdb.service`     |     19 |
+| **Total**          | **75** |
 
 Os testes cobrem principalmente regras de validação e comportamento dos serviços do backend, incluindo cache em memória, normalização de dados e tratamento de erros das integrações com RAWG e SteamGridDB.
 
@@ -515,6 +522,8 @@ npm run dev
 * [x] CRUD de gêneros
 * [x] Filtros
 * [x] Busca
+* [x] Integração com RAWG
+* [x] Integração com SteamGridDB
 * [x] Integração frontend/backend
 * [x] Tratamento de erros
 * [x] Redesign da interface
@@ -536,8 +545,6 @@ npm run dev
 * [ ] Wishlist avançada
 * [ ] Reviews
 * [ ] Dashboard e estatísticas avançadas
-* [x] Integração com RAWG
-* [x] Integração com SteamGridDB
 * [ ] Integração com Steam
 * [ ] Integração com IGDB
 
@@ -586,9 +593,9 @@ Durante o desenvolvimento do GameShelf foram trabalhados conceitos como:
 
 ## 📌 Status
 
-### ✅ V1.0.0 — Lançada
+### ✅ V1.1.0 — Lançada
 
-O **GameShelf V1** está disponível em produção.
+O **GameShelf** está disponível em produção.
 
 **Stack de deploy:**
 
@@ -596,7 +603,7 @@ O **GameShelf V1** está disponível em produção.
 * **Backend:** Render
 * **Banco:** Neon (PostgreSQL)
 
-A versão `v1.0.0` inclui CRUD completo, filtros, busca, dashboard, interface responsiva, temas claro/escuro, testes unitários, CI e documentação com screenshots e demonstração em GIF.
+A versão `v1.1.0` inclui CRUD completo, filtros, busca, dashboard, interface responsiva, temas claro/escuro, integração com RAWG e SteamGridDB (capas e backgrounds dinâmicos), testes unitários, CI e documentação com screenshots e demonstração em GIF.
 
 🌐 **Aplicação:** https://game-shelf-smoky.vercel.app/
 
