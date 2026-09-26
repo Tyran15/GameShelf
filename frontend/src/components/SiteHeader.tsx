@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
-import { Menu, Plus } from "lucide-react";
+import { Link, useLocation } from "@tanstack/react-router";
+import { ArrowLeft, Menu, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Logo } from "./Logo";
@@ -18,19 +18,59 @@ const NAV_LINKS = [
   { to: "/genres", label: "Gêneros" },
 ] as const;
 
+type BackTarget =
+  | { type: "home" }
+  | { type: "game-detail"; gameId: string };
+
+function resolveBackTarget(pathname: string): BackTarget | null {
+  // Home não mostra botão de voltar
+  if (pathname === "/") return null;
+
+  // /games/:id/edit volta para /games/:id
+  const editMatch = pathname.match(/^\/games\/(\d+)\/edit\/?$/);
+  if (editMatch) return { type: "game-detail", gameId: editMatch[1] };
+
+  // Qualquer outra rota não-home volta para a biblioteca
+  return { type: "home" };
+}
+
 export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = useLocation({ select: (loc) => loc.pathname });
+  const backTarget = resolveBackTarget(pathname);
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-3">
-        {/* Logo */}
-        <Link to="/" className="flex shrink-0 items-center gap-2">
-          <Logo className="h-8 w-8 sm:h-10 sm:w-10" />
-          <span className="font-display text-base font-bold tracking-tight sm:text-lg">
-            Game<span className="text-primary">Shelf</span>
-          </span>
-        </Link>
+        {/* Esquerda: voltar (condicional) + logo */}
+        <div className="flex min-w-0 items-center gap-1 sm:gap-2">
+          {backTarget && (
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 shrink-0"
+              aria-label="Voltar"
+            >
+              {backTarget.type === "game-detail" ? (
+                <Link to="/games/$id" params={{ id: backTarget.gameId }}>
+                  <ArrowLeft className="size-5" />
+                </Link>
+              ) : (
+                <Link to="/">
+                  <ArrowLeft className="size-5" />
+                </Link>
+              )}
+            </Button>
+          )}
+
+          <Link to="/" className="flex shrink-0 items-center gap-2">
+            <Logo className="h-8 w-8 sm:h-10 sm:w-10" />
+            <span className="font-display text-base font-bold tracking-tight sm:text-lg">
+              Game<span className="text-primary">Shelf</span>
+            </span>
+          </Link>
+        </div>
 
         {/* ----- Navegação desktop (>= 1024px) ----- */}
         <nav className="hidden items-center gap-1 lg:flex lg:gap-2">
