@@ -93,7 +93,7 @@ O projeto foi desenvolvido como um projeto de estudo e portfólio, com foco em *
 
 ## 🎬 Demo
 
-![Criar jogo](docs/demos/demo.gif)
+![Criar jogo](docs/demos/demo.gif?v=2)
 
 ---
 
@@ -101,27 +101,27 @@ O projeto foi desenvolvido como um projeto de estudo e portfólio, com foco em *
 
 ### Biblioteca (tema escuro)
 
-![Biblioteca - Tema Escuro](docs/screenshots/library.png)
+![Biblioteca - Tema Escuro](docs/screenshots/library.png?v=2)
 
 ### Biblioteca (tema claro)
 
-![Biblioteca - Tema Claro](docs/screenshots/library-light.png)
+![Biblioteca - Tema Claro](docs/screenshots/library-light.png?v=2)
 
 ### Detalhes do jogo
 
-![Detalhes do jogo](docs/screenshots/game-details.png)
+![Detalhes do jogo](docs/screenshots/game-details.png?v=2)
 
 ### Formulário de jogo
 
-![Formulário de jogo](docs/screenshots/game-form.png)
+![Formulário de jogo](docs/screenshots/game-form.png?v=2)
 
 ### Plataformas
 
-![Plataformas](docs/screenshots/platforms.png)
+![Plataformas](docs/screenshots/platforms.png?v=2)
 
 ### Gêneros
 
-![Gêneros](docs/screenshots/genres.png)
+![Gêneros](docs/screenshots/genres.png?v=2)
 
 ---
 
@@ -545,8 +545,8 @@ npm run dev
 * [ ] Wishlist avançada
 * [ ] Reviews
 * [ ] Dashboard e estatísticas avançadas
-* [ ] Integração com Steam
-* [ ] Integração com IGDB
+* [x] Integração com Steam
+* [x] Integração com IGDB
 
 ### V3 — Diferenciais
 
