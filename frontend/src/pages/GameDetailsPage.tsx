@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -30,6 +31,11 @@ export function GameDetailsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [bgModalOpen, setBgModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (isLoading) {
     return (
@@ -236,15 +242,21 @@ export function GameDetailsPage() {
         />
       </div>
 
-      {/* Botão flutuante e modal ficam fora do container de conteúdo */}
-      <button
-        type="button"
-        onClick={() => setBgModalOpen(true)}
-        className="fixed bottom-6 right-6 z-50 flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:scale-105"
-        title="Alterar background"
-      >
-        <ImagePlus className="size-5" />
-      </button>
+      {/* Botão flutuante renderizado via portal para escapar do stacking
+          context do <main> (que tem `isolate`). Sem isso, o <footer> — que
+          está no root com z-10 — pinta por cima dele. */}
+      {mounted &&
+        createPortal(
+          <button
+            type="button"
+            onClick={() => setBgModalOpen(true)}
+            className="fixed bottom-6 right-6 z-[100] flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:scale-105"
+            title="Alterar background"
+          >
+            <ImagePlus className="size-5" />
+          </button>,
+          document.body,
+        )}
 
       <BackgroundSelectorModal
         title={game.title}
