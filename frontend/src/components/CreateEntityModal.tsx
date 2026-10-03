@@ -68,9 +68,7 @@ export function CreateEntityModal({
               disabled={isPending}
               className="h-11"
             />
-            {error ? (
-              <p className="text-xs font-medium text-destructive">{error}</p>
-            ) : null}
+            {error ? <p className="text-xs font-medium text-destructive">{error}</p> : null}
           </div>
 
           <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-end">

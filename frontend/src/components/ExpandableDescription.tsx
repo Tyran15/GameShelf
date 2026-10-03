@@ -1,12 +1,7 @@
 import { useState } from "react";
 import { Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // Se o texto tiver mais que isso, mostra botão "Ler mais"
 const CHAR_THRESHOLD = 300;
@@ -58,9 +53,7 @@ export function ExpandableDescription({
             <DialogTitle>Descrição completa</DialogTitle>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto pr-2">
-            <p className="whitespace-pre-line text-sm leading-relaxed sm:text-base">
-              {text}
-            </p>
+            <p className="whitespace-pre-line text-sm leading-relaxed sm:text-base">{text}</p>
           </div>
         </DialogContent>
       </Dialog>

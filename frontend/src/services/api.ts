@@ -2,19 +2,16 @@
  * Cliente HTTP base. A URL da API vem sempre de variável de ambiente
  * (VITE_API_URL), com fallback para o backend local em desenvolvimento.
  */
-export const API_BASE_URL = (
-  import.meta.env["VITE_API_URL"] ?? "http://localhost:3000"
-).replace(/\/$/, "");
+export const API_BASE_URL = (import.meta.env["VITE_API_URL"] ?? "http://localhost:3000").replace(
+  /\/$/,
+  "",
+);
 
 export class ApiError extends Error {
   status: number;
   errors?: Record<string, string[]> | undefined;
 
-  constructor(
-    message: string,
-    status: number,
-    errors?: Record<string, string[]>,
-  ) {
+  constructor(message: string, status: number, errors?: Record<string, string[]>) {
     super(message);
     this.name = "ApiError";
     this.status = status;
@@ -54,10 +51,7 @@ export async function request<T>(
     }
     response = await fetch(buildUrl(path, query), init);
   } catch {
-    throw new ApiError(
-      "Não foi possível conectar à API. Verifique se o servidor está rodando.",
-      0,
-    );
+    throw new ApiError("Não foi possível conectar à API. Verifique se o servidor está rodando.", 0);
   }
 
   if (response.status === 204) {

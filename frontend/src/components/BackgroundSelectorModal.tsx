@@ -1,12 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ImageOff, Trash2 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -67,9 +62,7 @@ export function BackgroundSelectorModal({
           <TabsContent value="sgdb" className="flex-1 overflow-y-auto">
             <div className="grid grid-cols-2 gap-2">
               {heroesQuery.isLoading && (
-                <p className="col-span-2 text-sm text-muted-foreground">
-                  Carregando...
-                </p>
+                <p className="col-span-2 text-sm text-muted-foreground">Carregando...</p>
               )}
               {heroesQuery.isError && (
                 <p className="col-span-2 text-sm text-destructive">
@@ -82,17 +75,10 @@ export function BackgroundSelectorModal({
                   type="button"
                   onClick={() => select(h.url)}
                   className={`overflow-hidden rounded-lg border transition hover:ring-2 hover:ring-accent ${
-                    currentUrl === h.url
-                      ? "ring-2 ring-primary"
-                      : "border-border"
+                    currentUrl === h.url ? "ring-2 ring-primary" : "border-border"
                   }`}
                 >
-                  <img
-                    src={h.thumbUrl}
-                    alt=""
-                    className="w-full object-cover"
-                    loading="lazy"
-                  />
+                  <img src={h.thumbUrl} alt="" className="w-full object-cover" loading="lazy" />
                 </button>
               ))}
               {heroesQuery.data?.heroes.length === 0 && (
@@ -123,9 +109,7 @@ export function BackgroundSelectorModal({
 
         <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
           <p className="truncate text-xs text-muted-foreground">
-            {hasCurrent
-              ? "Há um background definido."
-              : "Nenhum background definido."}
+            {hasCurrent ? "Há um background definido." : "Nenhum background definido."}
           </p>
 
           <div className="flex shrink-0 gap-2">
@@ -140,11 +124,7 @@ export function BackgroundSelectorModal({
               <Trash2 className="size-4" />
               Remover
             </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
           </div>

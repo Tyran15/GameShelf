@@ -33,11 +33,7 @@ export function CreateGamePage() {
         <GameForm
           submitLabel="Salvar jogo"
           isSubmitting={createGame.isPending}
-          fieldErrors={
-            createGame.error instanceof ApiError
-              ? createGame.error.errors
-              : undefined
-          }
+          fieldErrors={createGame.error instanceof ApiError ? createGame.error.errors : undefined}
           onCancel={() => navigate({ to: "/" })}
           onSubmit={(data) =>
             createGame.mutate(data, {
@@ -47,9 +43,7 @@ export function CreateGamePage() {
               },
               onError: (error) =>
                 toast.error(
-                  error instanceof Error
-                    ? error.message
-                    : "Não foi possível salvar o jogo.",
+                  error instanceof Error ? error.message : "Não foi possível salvar o jogo.",
                 ),
             })
           }

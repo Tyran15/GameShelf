@@ -7,8 +7,7 @@ export const Route = createFileRoute("/")({
       { title: "GameShelf — Sua biblioteca pessoal de jogos" },
       {
         name: "description",
-        content:
-          "Cadastre, organize, pesquise e avalie os jogos da sua coleção em um só lugar.",
+        content: "Cadastre, organize, pesquise e avalie os jogos da sua coleção em um só lugar.",
       },
       { property: "og:title", content: "GameShelf — Biblioteca pessoal de jogos" },
       {

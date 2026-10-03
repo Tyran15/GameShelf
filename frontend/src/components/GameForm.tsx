@@ -1,12 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  Loader2,
-  ImageOff,
-  Image as ImageIcon,
-  ImagePlus,
-  Sparkles,
-  Plus,
-} from "lucide-react";
+import { Loader2, ImageOff, Image as ImageIcon, ImagePlus, Sparkles, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -115,8 +108,7 @@ export function GameForm({
   const [backgroundError, setBackgroundError] = useState(false);
   const [rawgModalOpen, setRawgModalOpen] = useState(false);
   const [selectedRawgId, setSelectedRawgId] = useState<number | null>(null);
-  const [rawgSuggestions, setRawgSuggestions] =
-    useState<RawgSuggestions | null>(null);
+  const [rawgSuggestions, setRawgSuggestions] = useState<RawgSuggestions | null>(null);
   const [coverModalOpen, setCoverModalOpen] = useState(false);
   const [bgModalOpen, setBgModalOpen] = useState(false);
 
@@ -142,9 +134,7 @@ export function GameForm({
       ...prev,
       title: details.title || prev.title,
       description: details.description ?? prev.description,
-      releaseDate: details.releaseDate
-        ? details.releaseDate.slice(0, 10)
-        : prev.releaseDate,
+      releaseDate: details.releaseDate ? details.releaseDate.slice(0, 10) : prev.releaseDate,
     }));
 
     setSelectedRawgId(null);
@@ -153,8 +143,7 @@ export function GameForm({
   function handleRawgSelect(rawgGame: RawgGame) {
     setForm((prev) => {
       const rawgCover = rawgGame.sgdbCoverUrl ?? rawgGame.coverUrl ?? "";
-      const hasManualCover =
-        prev.coverSource === "manual" && prev.coverUrl.trim().length > 0;
+      const hasManualCover = prev.coverSource === "manual" && prev.coverUrl.trim().length > 0;
       const shouldOverwrite = !hasManualCover && rawgCover.length > 0;
 
       return {
@@ -162,9 +151,7 @@ export function GameForm({
         title: rawgGame.title,
         coverUrl: shouldOverwrite ? rawgCover : prev.coverUrl,
         coverSource: shouldOverwrite ? "rawg" : prev.coverSource,
-        releaseDate: rawgGame.releaseDate
-          ? rawgGame.releaseDate.slice(0, 10)
-          : prev.releaseDate,
+        releaseDate: rawgGame.releaseDate ? rawgGame.releaseDate.slice(0, 10) : prev.releaseDate,
       };
     });
 
@@ -198,8 +185,7 @@ export function GameForm({
     setBackgroundError(false);
   }, [form.backgroundUrl]);
 
-  const errorFor = (field: string) =>
-    localErrors[field] ?? fieldErrors?.[field]?.[0];
+  const errorFor = (field: string) => localErrors[field] ?? fieldErrors?.[field]?.[0];
 
   const allPlatforms = useMemo(() => platforms.data ?? [], [platforms.data]);
   const allGenres = useMemo(() => genres.data ?? [], [genres.data]);
@@ -208,9 +194,7 @@ export function GameForm({
   const platformBadges = useMemo(() => {
     if (!rawgSuggestions) return [];
     return rawgSuggestions.platforms.map((name) => {
-      const matched = allPlatforms.find(
-        (p) => normalizeName(p.name) === normalizeName(name)
-      );
+      const matched = allPlatforms.find((p) => normalizeName(p.name) === normalizeName(name));
       return {
         name,
         matchedId: matched ? String(matched.id) : null,
@@ -219,8 +203,7 @@ export function GameForm({
     });
   }, [rawgSuggestions, allPlatforms, form.platformId]);
 
-  const hasPlatformSuggestions =
-    rawgSuggestions !== null && rawgSuggestions.platforms.length > 0;
+  const hasPlatformSuggestions = rawgSuggestions !== null && rawgSuggestions.platforms.length > 0;
 
   useEffect(() => {
     if (!rawgSuggestions || form.platformId) return;
@@ -235,9 +218,7 @@ export function GameForm({
   const genreBadges = useMemo(() => {
     if (!rawgSuggestions) return [];
     return rawgSuggestions.genres.map((name) => {
-      const matched = allGenres.find(
-        (g) => normalizeName(g.name) === normalizeName(name)
-      );
+      const matched = allGenres.find((g) => normalizeName(g.name) === normalizeName(name));
       return {
         name,
         matchedId: matched ? String(matched.id) : null,
@@ -246,8 +227,7 @@ export function GameForm({
     });
   }, [rawgSuggestions, allGenres, form.genreId]);
 
-  const hasGenreSuggestions =
-    rawgSuggestions !== null && rawgSuggestions.genres.length > 0;
+  const hasGenreSuggestions = rawgSuggestions !== null && rawgSuggestions.genres.length > 0;
 
   useEffect(() => {
     if (!rawgSuggestions || form.genreId) return;
@@ -266,9 +246,7 @@ export function GameForm({
       setPlatformModalOpen(false);
       setPlatformInitialName("");
     } catch (err) {
-      setPlatformError(
-        err instanceof Error ? err.message : "Erro ao criar plataforma."
-      );
+      setPlatformError(err instanceof Error ? err.message : "Erro ao criar plataforma.");
     }
   }
 
@@ -296,9 +274,7 @@ export function GameForm({
     }
   }
 
-  const selectedPlatform = allPlatforms.find(
-    (p) => String(p.id) === form.platformId
-  );
+  const selectedPlatform = allPlatforms.find((p) => String(p.id) === form.platformId);
   const selectedGenre = allGenres.find((g) => String(g.id) === form.genreId);
   const statusLabel = GAME_STATUS_LABELS[form.status];
   const isWishlist = form.status === "WISHLIST";
@@ -310,8 +286,7 @@ export function GameForm({
         : Number(form.rating).toFixed(1)
       : null;
 
-  const hasBackground =
-    form.backgroundUrl.trim().length > 0 && !backgroundError;
+  const hasBackground = form.backgroundUrl.trim().length > 0 && !backgroundError;
 
   function handleStatusChange(newStatus: GameStatus) {
     setForm((prev) => {
@@ -387,10 +362,8 @@ export function GameForm({
     };
     if (form.description.trim()) payload.description = form.description.trim();
     if (form.coverUrl.trim()) payload.coverUrl = form.coverUrl.trim();
-    if (form.backgroundUrl.trim())
-      payload.backgroundUrl = form.backgroundUrl.trim();
-    if (form.releaseDate)
-      payload.releaseDate = `${form.releaseDate}T00:00:00.000Z`;
+    if (form.backgroundUrl.trim()) payload.backgroundUrl = form.backgroundUrl.trim();
+    if (form.releaseDate) payload.releaseDate = `${form.releaseDate}T00:00:00.000Z`;
 
     if (isWishlist) {
       payload.rating = null;
@@ -445,9 +418,7 @@ export function GameForm({
                   <div className="flex size-full flex-col items-center justify-center gap-2 text-muted-foreground">
                     <ImageOff className="size-10" />
                     <span className="px-3 text-center text-xs">
-                      {coverError
-                        ? "Não foi possível carregar a imagem."
-                        : "Sem capa"}
+                      {coverError ? "Não foi possível carregar a imagem." : "Sem capa"}
                     </span>
                   </div>
                 )}
@@ -464,21 +435,16 @@ export function GameForm({
 
                 <div className="flex flex-wrap gap-1.5 text-xs text-muted-foreground">
                   {selectedPlatform ? (
-                    <span className="rounded bg-muted px-2 py-0.5">
-                      {selectedPlatform.name}
-                    </span>
+                    <span className="rounded bg-muted px-2 py-0.5">{selectedPlatform.name}</span>
                   ) : null}
                   {selectedGenre ? (
-                    <span className="rounded bg-muted px-2 py-0.5">
-                      {selectedGenre.name}
-                    </span>
+                    <span className="rounded bg-muted px-2 py-0.5">{selectedGenre.name}</span>
                   ) : null}
                 </div>
 
                 {ratingDisplay ? (
                   <p className="text-sm font-medium">
-                    Nota:{" "}
-                    <span className="text-primary">{ratingDisplay}</span>
+                    Nota: <span className="text-primary">{ratingDisplay}</span>
                     <span className="text-muted-foreground"> / 10</span>
                   </p>
                 ) : null}
@@ -714,9 +680,7 @@ export function GameForm({
           {rawgSuggestions ? (
             <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/40 p-3 text-xs sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-col gap-0.5">
-                <span className="font-medium text-foreground">
-                  Sugestões da RAWG aplicadas
-                </span>
+                <span className="font-medium text-foreground">Sugestões da RAWG aplicadas</span>
                 <span className="text-muted-foreground">
                   Plataformas e gêneros do jogo selecionado
                 </span>
@@ -751,8 +715,7 @@ export function GameForm({
                     {platformBadges.map((badge) => {
                       const matched = badge.matchedId !== null;
                       const isPending =
-                        createPlatform.isPending &&
-                        createPlatform.variables?.name === badge.name;
+                        createPlatform.isPending && createPlatform.variables?.name === badge.name;
 
                       return (
                         <button
@@ -767,9 +730,7 @@ export function GameForm({
                           }}
                           disabled={isPending}
                           title={
-                            matched
-                              ? "Clique para selecionar"
-                              : "Clique para criar e selecionar"
+                            matched ? "Clique para selecionar" : "Clique para criar e selecionar"
                           }
                           className={[
                             "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
@@ -780,12 +741,8 @@ export function GameForm({
                                 : "cursor-pointer border-dashed border-primary/40 bg-primary/5 text-primary hover:bg-primary/10",
                           ].join(" ")}
                         >
-                          {isPending ? (
-                            <Loader2 className="size-3 animate-spin" />
-                          ) : null}
-                          {!matched && !isPending ? (
-                            <Plus className="size-3" />
-                          ) : null}
+                          {isPending ? <Loader2 className="size-3 animate-spin" /> : null}
+                          {!matched && !isPending ? <Plus className="size-3" /> : null}
                           {badge.name}
                         </button>
                       );
@@ -793,30 +750,21 @@ export function GameForm({
                   </div>
 
                   <p className="text-xs text-muted-foreground">
-                    Clique em uma plataforma com + pra criá-la, ou escolha uma
-                    existente abaixo.
+                    Clique em uma plataforma com + pra criá-la, ou escolha uma existente abaixo.
                   </p>
 
                   <div className="flex gap-2">
-                    <Select
-                      value={form.platformId}
-                      onValueChange={(v) => set("platformId", v)}
-                    >
+                    <Select value={form.platformId} onValueChange={(v) => set("platformId", v)}>
                       <SelectTrigger id="platformId" className="h-11 flex-1">
                         <SelectValue
                           placeholder={
-                            platforms.isLoading
-                              ? "Carregando..."
-                              : "Ou escolha uma existente"
+                            platforms.isLoading ? "Carregando..." : "Ou escolha uma existente"
                           }
                         />
                       </SelectTrigger>
                       <SelectContent>
                         {allPlatforms.map((platform) => (
-                          <SelectItem
-                            key={platform.id}
-                            value={String(platform.id)}
-                          >
+                          <SelectItem key={platform.id} value={String(platform.id)}>
                             {platform.name}
                           </SelectItem>
                         ))}
@@ -837,23 +785,15 @@ export function GameForm({
                 </>
               ) : (
                 <div className="flex gap-2">
-                  <Select
-                    value={form.platformId}
-                    onValueChange={(v) => set("platformId", v)}
-                  >
+                  <Select value={form.platformId} onValueChange={(v) => set("platformId", v)}>
                     <SelectTrigger id="platformId" className="h-11 flex-1">
                       <SelectValue
-                        placeholder={
-                          platforms.isLoading ? "Carregando..." : "Selecione"
-                        }
+                        placeholder={platforms.isLoading ? "Carregando..." : "Selecione"}
                       />
                     </SelectTrigger>
                     <SelectContent>
                       {allPlatforms.map((platform) => (
-                        <SelectItem
-                          key={platform.id}
-                          value={String(platform.id)}
-                        >
+                        <SelectItem key={platform.id} value={String(platform.id)}>
                           {platform.name}
                         </SelectItem>
                       ))}
@@ -893,8 +833,7 @@ export function GameForm({
                   {genreBadges.map((badge) => {
                     const matched = badge.matchedId !== null;
                     const isPending =
-                      createGenre.isPending &&
-                      createGenre.variables?.name === badge.name;
+                      createGenre.isPending && createGenre.variables?.name === badge.name;
 
                     return (
                       <button
@@ -909,9 +848,7 @@ export function GameForm({
                         }}
                         disabled={isPending}
                         title={
-                          matched
-                            ? "Clique para selecionar"
-                            : "Clique para criar e selecionar"
+                          matched ? "Clique para selecionar" : "Clique para criar e selecionar"
                         }
                         className={[
                           "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
@@ -922,12 +859,8 @@ export function GameForm({
                               : "cursor-pointer border-dashed border-primary/40 bg-primary/5 text-primary hover:bg-primary/10",
                         ].join(" ")}
                       >
-                        {isPending ? (
-                          <Loader2 className="size-3 animate-spin" />
-                        ) : null}
-                        {!matched && !isPending ? (
-                          <Plus className="size-3" />
-                        ) : null}
+                        {isPending ? <Loader2 className="size-3 animate-spin" /> : null}
+                        {!matched && !isPending ? <Plus className="size-3" /> : null}
                         {badge.name}
                       </button>
                     );
@@ -935,21 +868,13 @@ export function GameForm({
                 </div>
 
                 <p className="text-xs text-muted-foreground">
-                  Clique em um gênero com + pra criá-lo, ou escolha um
-                  existente abaixo.
+                  Clique em um gênero com + pra criá-lo, ou escolha um existente abaixo.
                 </p>
 
-                <Select
-                  value={form.genreId}
-                  onValueChange={(v) => set("genreId", v)}
-                >
+                <Select value={form.genreId} onValueChange={(v) => set("genreId", v)}>
                   <SelectTrigger id="genreId" className="h-11">
                     <SelectValue
-                      placeholder={
-                        genres.isLoading
-                          ? "Carregando..."
-                          : "Ou escolha um existente"
-                      }
+                      placeholder={genres.isLoading ? "Carregando..." : "Ou escolha um existente"}
                     />
                   </SelectTrigger>
                   <SelectContent>
@@ -968,16 +893,9 @@ export function GameForm({
                 <Label htmlFor="genreId" className="text-sm">
                   Gênero *
                 </Label>
-                <Select
-                  value={form.genreId}
-                  onValueChange={(v) => set("genreId", v)}
-                >
+                <Select value={form.genreId} onValueChange={(v) => set("genreId", v)}>
                   <SelectTrigger id="genreId" className="h-11">
-                    <SelectValue
-                      placeholder={
-                        genres.isLoading ? "Carregando..." : "Selecione"
-                      }
-                    />
+                    <SelectValue placeholder={genres.isLoading ? "Carregando..." : "Selecione"} />
                   </SelectTrigger>
                   <SelectContent>
                     {allGenres.map((genre) => (
@@ -996,22 +914,11 @@ export function GameForm({
           </div>
 
           <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:justify-end">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              className="h-11 px-5"
-            >
+            <Button type="button" variant="outline" onClick={onCancel} className="h-11 px-5">
               Cancelar
             </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="h-11 px-5"
-            >
-              {isSubmitting ? (
-                <Loader2 className="size-5 animate-spin" />
-              ) : null}
+            <Button type="submit" disabled={isSubmitting} className="h-11 px-5">
+              {isSubmitting ? <Loader2 className="size-5 animate-spin" /> : null}
               {submitLabel}
             </Button>
           </div>

@@ -1,19 +1,9 @@
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function RatingPill({
-  rating,
-  className,
-}: {
-  rating: number | null;
-  className?: string;
-}) {
+export function RatingPill({ rating, className }: { rating: number | null; className?: string }) {
   if (rating === null || rating === undefined) {
-    return (
-      <span className={cn("text-xs text-muted-foreground", className)}>
-        Sem nota
-      </span>
-    );
+    return <span className={cn("text-xs text-muted-foreground", className)}>Sem nota</span>;
   }
 
   return (

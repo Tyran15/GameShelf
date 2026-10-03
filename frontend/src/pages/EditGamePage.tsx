@@ -47,14 +47,8 @@ export function EditGamePage({ id }: { id: number }) {
           game={game}
           submitLabel="Salvar alterações"
           isSubmitting={updateGame.isPending}
-          fieldErrors={
-            updateGame.error instanceof ApiError
-              ? updateGame.error.errors
-              : undefined
-          }
-          onCancel={() =>
-            navigate({ to: "/games/$id", params: { id: String(id) } })
-          }
+          fieldErrors={updateGame.error instanceof ApiError ? updateGame.error.errors : undefined}
+          onCancel={() => navigate({ to: "/games/$id", params: { id: String(id) } })}
           onSubmit={(data) =>
             updateGame.mutate(data, {
               onSuccess: (updated) => {
@@ -66,9 +60,7 @@ export function EditGamePage({ id }: { id: number }) {
               },
               onError: (err) =>
                 toast.error(
-                  err instanceof Error
-                    ? err.message
-                    : "Não foi possível salvar as alterações.",
+                  err instanceof Error ? err.message : "Não foi possível salvar as alterações.",
                 ),
             })
           }

@@ -4,23 +4,16 @@ import { ArrowLeft, Menu, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Logo } from "./Logo";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 const NAV_LINKS = [
   { to: "/", label: "Biblioteca" },
+  { to: "/stats", label: "Estatísticas" },
   { to: "/platforms", label: "Plataformas" },
   { to: "/genres", label: "Gêneros" },
 ] as const;
 
-type BackTarget =
-  | { type: "home" }
-  | { type: "game-detail"; gameId: string };
+type BackTarget = { type: "home" } | { type: "game-detail"; gameId: string };
 
 function resolveBackTarget(pathname: string): BackTarget | null {
   // Home não mostra botão de voltar
@@ -107,12 +100,7 @@ export function SiteHeader() {
           {/* Menu hamburger */}
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Abrir menu"
-                className="h-9 w-9"
-              >
+              <Button variant="ghost" size="icon" aria-label="Abrir menu" className="h-9 w-9">
                 <Menu className="size-5" />
               </Button>
             </SheetTrigger>
@@ -124,12 +112,7 @@ export function SiteHeader() {
 
               <nav className="mt-2 flex flex-col gap-1 px-4 pb-4">
                 {NAV_LINKS.map((link) => (
-                  <Button
-                    key={link.to}
-                    asChild
-                    variant="ghost"
-                    className="justify-start text-base"
-                  >
+                  <Button key={link.to} asChild variant="ghost" className="justify-start text-base">
                     <Link
                       to={link.to}
                       activeProps={{ className: "text-primary" }}

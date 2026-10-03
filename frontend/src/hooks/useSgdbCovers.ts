@@ -34,8 +34,7 @@ export function useSgdbSearch(query: string, enabled: boolean) {
 
   return useQuery({
     queryKey: ["sgdb-search", trimmed],
-    queryFn: () =>
-      request<SgdbSearchResponse>("/sgdb/search", { query: { q: trimmed } }),
+    queryFn: () => request<SgdbSearchResponse>("/sgdb/search", { query: { q: trimmed } }),
     enabled: canSearch,
     staleTime: STALE_TIME,
   });
@@ -44,8 +43,7 @@ export function useSgdbSearch(query: string, enabled: boolean) {
 export function useSgdbCovers(gameId: number | null) {
   return useQuery({
     queryKey: ["sgdb-covers", gameId],
-    queryFn: () =>
-      request<SgdbCoversResponse>(`/sgdb/games/${gameId}/covers`),
+    queryFn: () => request<SgdbCoversResponse>(`/sgdb/games/${gameId}/covers`),
     enabled: typeof gameId === "number" && gameId > 0,
     staleTime: STALE_TIME,
   });

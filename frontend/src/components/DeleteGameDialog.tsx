@@ -34,8 +34,8 @@ export function DeleteGameDialog({
           <DialogTitle className="text-left">Excluir jogo</DialogTitle>
           <DialogDescription className="text-left">
             Tem certeza que deseja excluir{" "}
-            <span className="font-semibold text-foreground">{gameTitle}</span>?
-            Essa ação não pode ser desfeita.
+            <span className="font-semibold text-foreground">{gameTitle}</span>? Essa ação não pode
+            ser desfeita.
           </DialogDescription>
         </DialogHeader>
 
@@ -54,12 +54,7 @@ export function DeleteGameDialog({
           >
             Cancelar
           </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={onConfirm}
-            disabled={isPending}
-          >
+          <Button type="button" variant="destructive" onClick={onConfirm} disabled={isPending}>
             {isPending ? (
               <>
                 <Loader2 className="size-4 animate-spin" />

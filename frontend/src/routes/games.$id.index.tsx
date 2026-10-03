@@ -7,8 +7,7 @@ export const Route = createFileRoute("/games/$id/")({
       { title: "Detalhes do jogo — GameShelf" },
       {
         name: "description",
-        content:
-          "Veja capa, descrição, plataforma, gênero, status e nota do jogo.",
+        content: "Veja capa, descrição, plataforma, gênero, status e nota do jogo.",
       },
       { property: "og:title", content: "Detalhes do jogo — GameShelf" },
       {

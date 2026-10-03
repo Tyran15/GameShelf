@@ -1,13 +1,7 @@
 import type { Genre } from "./genre";
 import type { Platform } from "./platform";
 
-export const GAME_STATUSES = [
-  "WISHLIST",
-  "PLAYING",
-  "COMPLETED",
-  "PAUSED",
-  "DROPPED",
-] as const;
+export const GAME_STATUSES = ["WISHLIST", "PLAYING", "COMPLETED", "PAUSED", "DROPPED"] as const;
 
 export type GameStatus = (typeof GAME_STATUSES)[number];
 

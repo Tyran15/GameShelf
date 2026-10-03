@@ -10,9 +10,7 @@ export function GameCard({ game }: { game: Game }) {
   const platforms = usePlatforms();
   const genres = useGenres();
 
-  const platformName = platforms.data?.find(
-    (p) => p.id === game.platformId
-  )?.name;
+  const platformName = platforms.data?.find((p) => p.id === game.platformId)?.name;
   const genreName = genres.data?.find((g) => g.id === game.genreId)?.name;
 
   return (
@@ -53,21 +51,13 @@ export function GameCard({ game }: { game: Game }) {
 
       {/* Infos do card */}
       <div className="grid gap-1.5 p-3">
-        <h3 className="line-clamp-2 text-sm font-semibold">
-          {game.title}
-        </h3>
+        <h3 className="line-clamp-2 text-sm font-semibold">{game.title}</h3>
 
         <div className="flex flex-wrap gap-1.5 text-xs text-muted-foreground">
           {platformName ? (
-            <span className="rounded bg-muted px-2 py-0.5">
-              {platformName}
-            </span>
+            <span className="rounded bg-muted px-2 py-0.5">{platformName}</span>
           ) : null}
-          {genreName ? (
-            <span className="rounded bg-muted px-2 py-0.5">
-              {genreName}
-            </span>
-          ) : null}
+          {genreName ? <span className="rounded bg-muted px-2 py-0.5">{genreName}</span> : null}
         </div>
 
         {game.rating !== null && game.rating !== undefined ? (

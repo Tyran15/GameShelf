@@ -1,26 +1,10 @@
 import { useEffect, useState } from "react";
-import {
-  ArrowLeft,
-  Check,
-  ImageOff,
-  Loader2,
-  Search,
-} from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { ArrowLeft, Check, ImageOff, Loader2, Search } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  useSgdbCovers,
-  useSgdbSearch,
-  type SgdbCover,
-  type SgdbGame,
-} from "@/hooks/useSgdbCovers";
+import { useSgdbCovers, useSgdbSearch, type SgdbCover, type SgdbGame } from "@/hooks/useSgdbCovers";
 
 const DEBOUNCE_MS = 400;
 
@@ -79,12 +63,8 @@ export function CoverSelectorModal({
   const trimmedLength = debouncedQuery.trim().length;
   const showHint = trimmedLength < 3;
   const showEmptySearch =
-    !search.isLoading &&
-    !search.isError &&
-    trimmedLength >= 3 &&
-    games.length === 0;
-  const showEmptyCovers =
-    !covers.isLoading && !covers.isError && coverList.length === 0;
+    !search.isLoading && !search.isError && trimmedLength >= 3 && games.length === 0;
+  const showEmptyCovers = !covers.isLoading && !covers.isError && coverList.length === 0;
 
   function handleSelectGame(game: SgdbGame) {
     setSelectedGame(game);
@@ -101,10 +81,7 @@ export function CoverSelectorModal({
     onOpenChange(false);
   }
 
-  const canApply =
-    activeTab === "search"
-      ? Boolean(selectedCover)
-      : manualUrl.trim().length > 0;
+  const canApply = activeTab === "search" ? Boolean(selectedCover) : manualUrl.trim().length > 0;
 
   function handleApply() {
     if (activeTab === "search" && selectedCover) {
@@ -138,10 +115,7 @@ export function CoverSelectorModal({
             <TabsTrigger value="url">Por URL</TabsTrigger>
           </TabsList>
 
-          <TabsContent
-            value="search"
-            className="flex min-h-0 flex-1 flex-col gap-3"
-          >
+          <TabsContent value="search" className="flex min-h-0 flex-1 flex-col gap-3">
             {selectedGame ? (
               <div className="flex items-center gap-2">
                 <Button
@@ -156,9 +130,7 @@ export function CoverSelectorModal({
                 </Button>
                 <p className="truncate text-sm text-muted-foreground">
                   {selectedGame.name}
-                  {selectedGame.releaseYear
-                    ? ` (${selectedGame.releaseYear})`
-                    : ""}
+                  {selectedGame.releaseYear ? ` (${selectedGame.releaseYear})` : ""}
                 </p>
               </div>
             ) : (
@@ -187,18 +159,14 @@ export function CoverSelectorModal({
                   </div>
                 ) : search.isError ? (
                   <p className="py-8 text-center text-sm text-destructive">
-                    Não foi possível buscar jogos no SteamGridDB agora. Tente
-                    novamente.
+                    Não foi possível buscar jogos no SteamGridDB agora. Tente novamente.
                   </p>
                 ) : showEmptySearch ? (
                   <div className="grid gap-2 py-8 text-center text-sm text-muted-foreground">
                     <p>Nenhum jogo encontrado para "{debouncedQuery.trim()}".</p>
                     <p>
-                      Tente a aba{" "}
-                      <span className="font-medium text-foreground">
-                        Por URL
-                      </span>{" "}
-                      para colar um link manualmente.
+                      Tente a aba <span className="font-medium text-foreground">Por URL</span> para
+                      colar um link manualmente.
                     </p>
                   </div>
                 ) : (
@@ -228,18 +196,14 @@ export function CoverSelectorModal({
                 </div>
               ) : covers.isError ? (
                 <p className="py-8 text-center text-sm text-destructive">
-                  Não foi possível buscar capas no SteamGridDB agora. Tente
-                  novamente.
+                  Não foi possível buscar capas no SteamGridDB agora. Tente novamente.
                 </p>
               ) : showEmptyCovers ? (
                 <div className="grid gap-2 py-8 text-center text-sm text-muted-foreground">
                   <p>Nenhuma capa 2:3 encontrada para este jogo.</p>
                   <p>
-                    Tente a aba{" "}
-                    <span className="font-medium text-foreground">
-                      Por URL
-                    </span>{" "}
-                    para colar um link manualmente.
+                    Tente a aba <span className="font-medium text-foreground">Por URL</span> para
+                    colar um link manualmente.
                   </p>
                 </div>
               ) : (
@@ -273,12 +237,9 @@ export function CoverSelectorModal({
 
                         <div className="grid gap-0.5 px-0.5 text-[11px] text-muted-foreground">
                           <span>
-                            {cover.width} × {cover.height} •{" "}
-                            {mimeLabel(cover.mime)}
+                            {cover.width} × {cover.height} • {mimeLabel(cover.mime)}
                           </span>
-                          {cover.author ? (
-                            <span className="truncate">{cover.author}</span>
-                          ) : null}
+                          {cover.author ? <span className="truncate">{cover.author}</span> : null}
                         </div>
                       </button>
                     );
@@ -347,16 +308,10 @@ export function CoverSelectorModal({
         </Tabs>
 
         <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
-          <p className="truncate text-xs text-muted-foreground">
-            {selectionLabel}
-          </p>
+          <p className="truncate text-xs text-muted-foreground">{selectionLabel}</p>
 
           <div className="flex shrink-0 gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
             <Button type="button" disabled={!canApply} onClick={handleApply}>

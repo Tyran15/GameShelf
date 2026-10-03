@@ -1,15 +1,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
-import {
-  ArrowLeft,
-  Calendar,
-  Clock,
-  Gamepad2,
-  ImagePlus,
-  Pencil,
-  Trash2,
-} from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Gamepad2, ImagePlus, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DeleteGameDialog } from "@/components/DeleteGameDialog";
 import { RatingPill } from "@/components/RatingPill";
@@ -60,8 +52,7 @@ export function GameDetailsPage() {
     ? new Date(game.releaseDate).toLocaleDateString("pt-BR")
     : "—";
 
-  const hasHoursPlayed =
-    game.hoursPlayed !== null && game.hoursPlayed !== undefined;
+  const hasHoursPlayed = game.hoursPlayed !== null && game.hoursPlayed !== undefined;
 
   function handleOpenDialog() {
     setErrorMessage(null);
@@ -79,9 +70,7 @@ export function GameDetailsPage() {
         navigate({ to: "/" });
       },
       onError: (error) => {
-        setErrorMessage(
-          error instanceof Error ? error.message : "Erro ao excluir o jogo."
-        );
+        setErrorMessage(error instanceof Error ? error.message : "Erro ao excluir o jogo.");
       },
     });
   }
@@ -100,7 +89,7 @@ export function GameDetailsPage() {
           queryClient.invalidateQueries({ queryKey: ["games"] });
           queryClient.invalidateQueries({ queryKey: ["game", game.id] });
         },
-      }
+      },
     );
   }
 
@@ -182,8 +171,9 @@ export function GameDetailsPage() {
               </div>
 
               <div
-                className={`rounded-xl border border-border bg-surface p-4 ${hasHoursPlayed ? "" : "sm:col-span-2"
-                  }`}
+                className={`rounded-xl border border-border bg-surface p-4 ${
+                  hasHoursPlayed ? "" : "sm:col-span-2"
+                }`}
               >
                 <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   <Calendar className="size-3.5" />

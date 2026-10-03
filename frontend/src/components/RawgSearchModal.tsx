@@ -1,11 +1,6 @@
 import { useEffect, useState } from "react";
 import { Loader2, Search, ImageOff } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useRawgSearch, type RawgGame } from "@/hooks/useRawgSearch";
@@ -52,10 +47,7 @@ export function RawgSearchModal({
 
   const trimmedLength = debouncedQuery.trim().length;
   const showEmptyState =
-    !search.isLoading &&
-    !search.isError &&
-    trimmedLength >= 3 &&
-    games.length === 0;
+    !search.isLoading && !search.isError && trimmedLength >= 3 && games.length === 0;
   const showHint = trimmedLength < 3;
 
   return (
@@ -97,11 +89,7 @@ export function RawgSearchModal({
           ) : (
             <ul className="grid gap-2">
               {games.map((game) => (
-                <RawgGameItem
-                  key={game.rawgId}
-                  game={game}
-                  onSelect={() => handleSelect(game)}
-                />
+                <RawgGameItem key={game.rawgId} game={game} onSelect={() => handleSelect(game)} />
               ))}
             </ul>
           )}
@@ -123,13 +111,7 @@ export function RawgSearchModal({
   );
 }
 
-function RawgGameItem({
-  game,
-  onSelect,
-}: {
-  game: RawgGame;
-  onSelect: () => void;
-}) {
+function RawgGameItem({ game, onSelect }: { game: RawgGame; onSelect: () => void }) {
   const year = game.releaseDate ? game.releaseDate.slice(0, 4) : null;
   const genres = game.genres.slice(0, 3);
 
@@ -150,12 +132,7 @@ function RawgGameItem({
           } w-12 shrink-0 overflow-hidden rounded bg-secondary`}
         >
           {cover ? (
-            <img
-              src={cover}
-              alt=""
-              className="size-full object-cover"
-              loading="lazy"
-            />
+            <img src={cover} alt="" className="size-full object-cover" loading="lazy" />
           ) : (
             <div className="flex size-full items-center justify-center text-muted-foreground">
               <ImageOff className="size-4" />
@@ -169,9 +146,7 @@ function RawgGameItem({
           <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
             {year ? <span>{year}</span> : null}
             {year && game.averagePlaytime > 0 ? <span>•</span> : null}
-            {game.averagePlaytime > 0 ? (
-              <span>~{game.averagePlaytime}h para zerar</span>
-            ) : null}
+            {game.averagePlaytime > 0 ? <span>~{game.averagePlaytime}h para zerar</span> : null}
           </div>
 
           {genres.length > 0 ? (

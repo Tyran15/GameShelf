@@ -98,8 +98,7 @@ export function LibraryPage() {
       ) : (
         <>
           <p className="text-xs uppercase tracking-wide text-muted-foreground">
-            {games.data!.length}{" "}
-            {games.data!.length === 1 ? "jogo" : "jogos"}
+            {games.data!.length} {games.data!.length === 1 ? "jogo" : "jogos"}
           </p>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {games.data!.map((game) => (

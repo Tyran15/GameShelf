@@ -33,10 +33,7 @@ export function GameFiltersBar({
   genres: Genre[];
 }) {
   const hasFilters =
-    value.search !== "" ||
-    value.status !== "" ||
-    value.platformId !== "" ||
-    value.genreId !== "";
+    value.search !== "" || value.status !== "" || value.platformId !== "" || value.genreId !== "";
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 md:flex-row md:items-center">
@@ -54,9 +51,7 @@ export function GameFiltersBar({
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 md:w-auto">
         <Select
           value={value.status === "" ? ALL : value.status}
-          onValueChange={(v) =>
-            onChange({ ...value, status: v === ALL ? "" : (v as GameStatus) })
-          }
+          onValueChange={(v) => onChange({ ...value, status: v === ALL ? "" : (v as GameStatus) })}
         >
           <SelectTrigger className="min-w-36" aria-label="Filtrar por status">
             <SelectValue placeholder="Status" />
@@ -73,9 +68,7 @@ export function GameFiltersBar({
 
         <Select
           value={value.platformId === "" ? ALL : String(value.platformId)}
-          onValueChange={(v) =>
-            onChange({ ...value, platformId: v === ALL ? "" : Number(v) })
-          }
+          onValueChange={(v) => onChange({ ...value, platformId: v === ALL ? "" : Number(v) })}
         >
           <SelectTrigger className="min-w-36" aria-label="Filtrar por plataforma">
             <SelectValue placeholder="Plataforma" />
@@ -92,9 +85,7 @@ export function GameFiltersBar({
 
         <Select
           value={value.genreId === "" ? ALL : String(value.genreId)}
-          onValueChange={(v) =>
-            onChange({ ...value, genreId: v === ALL ? "" : Number(v) })
-          }
+          onValueChange={(v) => onChange({ ...value, genreId: v === ALL ? "" : Number(v) })}
         >
           <SelectTrigger className="min-w-36" aria-label="Filtrar por gênero">
             <SelectValue placeholder="Gênero" />
@@ -114,9 +105,7 @@ export function GameFiltersBar({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() =>
-            onChange({ search: "", status: "", platformId: "", genreId: "" })
-          }
+          onClick={() => onChange({ search: "", status: "", platformId: "", genreId: "" })}
         >
           Limpar
         </Button>

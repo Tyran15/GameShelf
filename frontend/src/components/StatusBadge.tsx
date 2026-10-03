@@ -9,13 +9,7 @@ const STATUS_STYLES: Record<GameStatus, string> = {
   DROPPED: "bg-destructive/15 text-destructive border-destructive/30",
 };
 
-export function StatusBadge({
-  status,
-  className,
-}: {
-  status: GameStatus;
-  className?: string;
-}) {
+export function StatusBadge({ status, className }: { status: GameStatus; className?: string }) {
   return (
     <span
       className={cn(

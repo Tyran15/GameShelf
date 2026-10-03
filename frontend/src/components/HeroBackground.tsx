@@ -10,10 +10,7 @@ export function HeroBackground({
   if (!url) return null;
 
   return (
-    <div
-      className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
-      aria-hidden
-    >
+    <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden>
       <img
         src={url}
         alt=""
