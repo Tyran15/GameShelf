@@ -34,6 +34,25 @@ export function useUpdateGame(id: number) {
   });
 }
 
+const DELETE_BATCH_SIZE = 5;
+
+/** Exclui vários jogos em lotes (a API só tem DELETE por id) e informa quantos falharam. */
+export function useDeleteAllGames() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (ids: number[]) => {
+      let failed = 0;
+      for (let start = 0; start < ids.length; start += DELETE_BATCH_SIZE) {
+        const batch = ids.slice(start, start + DELETE_BATCH_SIZE);
+        const results = await Promise.allSettled(batch.map((id) => gameService.remove(id)));
+        failed += results.filter((result) => result.status === "rejected").length;
+      }
+      return { deleted: ids.length - failed, failed };
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["games"] }),
+  });
+}
+
 export function useDeleteGame() {
   const queryClient = useQueryClient();
   return useMutation({

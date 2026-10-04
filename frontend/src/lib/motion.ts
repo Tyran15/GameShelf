@@ -13,6 +13,10 @@ export function staggerDelay(index: number, offsetMs = 0): CSSProperties {
   return { animationDelay: `${staggerMs(index, offsetMs)}ms` };
 }
 
+/** Vale tanto a preferência do sistema quanto a opção "Reduzir animações" das Configurações. */
 export function prefersReducedMotion(): boolean {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  return (
+    document.documentElement.dataset["motion"] === "reduced" ||
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
 }

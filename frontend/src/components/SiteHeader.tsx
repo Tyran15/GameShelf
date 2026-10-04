@@ -11,6 +11,7 @@ const NAV_LINKS = [
   { to: "/stats", label: "Estatísticas" },
   { to: "/platforms", label: "Plataformas" },
   { to: "/genres", label: "Gêneros" },
+  { to: "/settings", label: "Configurações" },
 ] as const;
 
 type BackTarget = { type: "home" } | { type: "game-detail"; gameId: string };

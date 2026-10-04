@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,10 @@ import { ErrorState } from "@/components/ErrorState";
 import { GameFiltersBar, type FiltersValue } from "@/components/GameFiltersBar";
 import { useGames } from "@/hooks/useGames";
 import { useGenres } from "@/hooks/useGenres";
+import { useSettings } from "@/hooks/useSettings";
 import { usePlatforms } from "@/hooks/usePlatforms";
 import { LibraryStats } from "@/components/LibraryStats";
+import { LIBRARY_GRID_CLASSES, prepareLibraryGames } from "@/lib/libraryView";
 import { staggerDelay } from "@/lib/motion";
 
 const EMPTY_FILTERS: FiltersValue = {
@@ -29,6 +31,7 @@ export function LibraryPage() {
     return () => clearTimeout(timer);
   }, [filters.search]);
 
+  const { settings } = useSettings();
   const platforms = usePlatforms();
   const genres = useGenres();
   const libraryStats = useGames({});
@@ -38,6 +41,12 @@ export function LibraryPage() {
     platformId: filters.platformId,
     genreId: filters.genreId,
   });
+
+  const { visible, hiddenCount } = useMemo(
+    () => prepareLibraryGames(games.data ?? [], settings, filters.status),
+    [games.data, settings, filters.status],
+  );
+  const gridClassName = LIBRARY_GRID_CLASSES[settings.density];
 
   const hasFilters =
     debouncedSearch !== "" ||
@@ -78,7 +87,7 @@ export function LibraryPage() {
       </div>
 
       {games.isLoading ? (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+        <div className={gridClassName}>
           {Array.from({ length: 10 }).map((_, index) => (
             <GameCardSkeleton key={index} />
           ))}
@@ -98,13 +107,22 @@ export function LibraryPage() {
             description="Cadastre o primeiro jogo da sua coleção para começar."
           />
         )
+      ) : visible.length === 0 ? (
+        <EmptyState
+          title="Nenhum jogo para exibir"
+          description="Os jogos abandonados estão ocultos pelas suas configurações."
+          showAction={false}
+        />
       ) : (
         <>
           <p className="text-xs uppercase tracking-wide text-muted-foreground">
-            {games.data!.length} {games.data!.length === 1 ? "jogo" : "jogos"}
+            {visible.length} {visible.length === 1 ? "jogo" : "jogos"}
+            {hiddenCount > 0
+              ? ` · ${hiddenCount} ${hiddenCount === 1 ? "abandonado oculto" : "abandonados ocultos"}`
+              : null}
           </p>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {games.data!.map((game, index) => (
+          <div className={gridClassName}>
+            {visible.map((game, index) => (
               <GameCard
                 key={game.id}
                 game={game}

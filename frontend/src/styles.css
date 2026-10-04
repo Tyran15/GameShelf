@@ -293,3 +293,9 @@
     animation: none;
   }
 }
+
+/* Opção "Reduzir animações" das Configurações (data-motion definido em lib/settings.ts). */
+:root[data-motion="reduced"]
+  :is(.animate-fade-up, .animate-grow-x, .animate-grow-y, .animate-donut-draw) {
+  animation: none;
+}

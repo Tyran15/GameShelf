@@ -16,6 +16,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Toaster } from "@/components/ui/sonner";
 import { THEME_INIT_SCRIPT } from "../lib/theme";
+import { SETTINGS_INIT_SCRIPT } from "../lib/settings";
 import { resolveServerLocale, getI18nInstance } from "../lib/i18n";
 
 function NotFoundComponent() {
@@ -134,6 +135,7 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang={locale}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: SETTINGS_INIT_SCRIPT }} />
         <HeadContent />
       </head>
       <body>
