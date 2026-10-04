@@ -544,7 +544,7 @@ npm run dev
 * [ ] Multiusuário
 * [ ] Wishlist avançada
 * [ ] Reviews
-* [ ] Dashboard e estatísticas avançadas
+* [x] Dashboard e estatísticas avançadas
 * [x] Integração com Steam
 * [x] Integração com IGDB
 
