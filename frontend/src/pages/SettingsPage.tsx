@@ -1,5 +1,6 @@
-import { Database, LayoutGrid, Palette, RotateCcw, TriangleAlert } from "lucide-react";
+import { Database, KeyRound, LayoutGrid, Palette, RotateCcw, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
+import { ApiKeysSection } from "@/components/settings/ApiKeysSection";
 import { AppearanceSection } from "@/components/settings/AppearanceSection";
 import { DangerSection } from "@/components/settings/DangerSection";
 import { DataSection } from "@/components/settings/DataSection";
@@ -12,6 +13,7 @@ import { setThemePreference } from "@/lib/theme";
 const NAV_ITEMS: readonly SettingsNavItem[] = [
   { id: "aparencia", label: "Aparência", icon: Palette },
   { id: "biblioteca", label: "Biblioteca", icon: LayoutGrid },
+  { id: "integracoes", label: "Integrações", icon: KeyRound },
   { id: "dados", label: "Dados", icon: Database },
   { id: "zona-de-perigo", label: "Zona de perigo", icon: TriangleAlert },
 ];
@@ -22,7 +24,7 @@ export function SettingsPage() {
   function handleReset() {
     reset();
     setThemePreference("system");
-    toast.success("Preferências restauradas para o padrão.");
+    toast.success("Preferências restauradas. As chaves de API foram mantidas.");
   }
 
   return (
@@ -47,8 +49,9 @@ export function SettingsPage() {
         <div className="min-w-0 space-y-6">
           <AppearanceSection index={1} />
           <LibrarySection index={2} />
-          <DataSection index={3} />
-          <DangerSection index={4} />
+          <ApiKeysSection index={3} />
+          <DataSection index={4} />
+          <DangerSection index={5} />
         </div>
       </div>
     </div>
