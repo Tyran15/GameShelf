@@ -331,23 +331,23 @@ export function GameForm({
     event.preventDefault();
 
     const errors: Record<string, string> = {};
-    if (!form.title.trim()) errors.title = "Informe o título do jogo.";
-    if (!form.platformId) errors.platformId = "Selecione uma plataforma.";
-    if (!form.genreId) errors.genreId = "Selecione um gênero.";
+    if (!form.title.trim()) errors["title"] = "Informe o título do jogo.";
+    if (!form.platformId) errors["platformId"] = "Selecione uma plataforma.";
+    if (!form.genreId) errors["genreId"] = "Selecione um gênero.";
 
     if (!isWishlist && form.rating !== "") {
       const value = Number(form.rating);
       if (Number.isNaN(value) || value < 0 || value > 10) {
-        errors.rating = "A nota deve ser entre 0 e 10.";
+        errors["rating"] = "A nota deve ser entre 0 e 10.";
       } else if (!/^\d{1,2}(\.\d)?$/.test(form.rating)) {
-        errors.rating = "Use apenas uma casa decimal (ex.: 7.4).";
+        errors["rating"] = "Use apenas uma casa decimal (ex.: 7.4).";
       }
     }
 
     if (!isWishlist && form.hoursPlayed !== "") {
       const value = parseDecimal(form.hoursPlayed);
       if (value === null || value < 0) {
-        errors.hoursPlayed = "Informe um valor válido (0 ou mais).";
+        errors["hoursPlayed"] = "Informe um valor válido (0 ou mais).";
       }
     }
 

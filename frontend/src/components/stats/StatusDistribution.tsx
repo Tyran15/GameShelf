@@ -1,6 +1,8 @@
 import { Activity } from "lucide-react";
 import { GAME_STATUS_LABELS, type GameStatus } from "@/types/game";
+import { cn } from "@/lib/utils";
 import { formatPercent, type StatusSlice } from "@/lib/libraryStats";
+import { staggerMs } from "@/lib/motion";
 import { SectionEmpty, StatsSection } from "./StatsSection";
 
 const STATUS_COLORS: Record<GameStatus, { bg: string; stroke: string }> = {
@@ -18,10 +20,12 @@ export function StatusDistribution({
   slices,
   totalGames,
   completionRate,
+  index = 0,
 }: {
   slices: StatusSlice[];
   totalGames: number;
   completionRate: number;
+  index?: number;
 }) {
   const visible = slices.filter((slice) => slice.count > 0);
 
@@ -38,6 +42,7 @@ export function StatusDistribution({
     <StatsSection
       icon={Activity}
       title="Distribuição por status"
+      index={index}
       aside={`${totalGames} ${totalGames === 1 ? "título" : "títulos"}`}
     >
       {totalGames === 0 ? (
@@ -60,7 +65,7 @@ export function StatusDistribution({
                   strokeWidth="18"
                   className="stroke-muted"
                 />
-                {segments.map(({ slice, dash, offset }) => (
+                {segments.map(({ slice, dash, offset }, position) => (
                   <circle
                     key={slice.status}
                     cx="80"
@@ -70,7 +75,8 @@ export function StatusDistribution({
                     strokeWidth="18"
                     strokeDasharray={`${dash} ${CIRCUMFERENCE - dash}`}
                     strokeDashoffset={-offset}
-                    className={STATUS_COLORS[slice.status].stroke}
+                    className={cn("animate-donut-draw", STATUS_COLORS[slice.status].stroke)}
+                    style={{ animationDelay: `${staggerMs(index, 200 + position * 150)}ms` }}
                   />
                 ))}
               </svg>
@@ -107,7 +113,10 @@ export function StatusDistribution({
             </ul>
           </div>
 
-          <div className="flex h-2.5 w-full gap-0.5 overflow-hidden rounded-full bg-muted">
+          <div
+            className="animate-grow-x flex h-2.5 w-full gap-0.5 overflow-hidden rounded-full bg-muted"
+            style={{ animationDelay: `${staggerMs(index, 500)}ms` }}
+          >
             {visible.map((slice) => (
               <div
                 key={slice.status}

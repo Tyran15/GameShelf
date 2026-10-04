@@ -118,9 +118,15 @@ function FeaturedCard({ highlight, game }: { highlight: Highlight; game: Game | 
   );
 }
 
-export function FeaturedGames({ featured }: { featured: FeaturedGamesData }) {
+export function FeaturedGames({
+  featured,
+  index = 0,
+}: {
+  featured: FeaturedGamesData;
+  index?: number;
+}) {
   return (
-    <StatsSection icon={Trophy} title="Destaques da biblioteca">
+    <StatsSection icon={Trophy} title="Destaques da biblioteca" index={index}>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {HIGHLIGHTS.map((highlight) => (
           <FeaturedCard key={highlight.key} highlight={highlight} game={featured[highlight.key]} />

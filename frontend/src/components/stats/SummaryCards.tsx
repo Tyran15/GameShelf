@@ -1,5 +1,8 @@
 import { CheckCircle2, Clock, Heart, LayoutGrid, PlayCircle, Star } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
+import { AnimatedNumber } from "@/components/AnimatedNumber";
+import { staggerDelay } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { formatNumber, formatPercent, formatRating, type LibrarySummary } from "@/lib/libraryStats";
 
@@ -17,16 +20,21 @@ function StatCard({
   hint,
   icon: Icon,
   tone,
+  index,
 }: {
+  index: number;
   label: string;
-  value: string;
+  value: ReactNode;
   suffix?: string | undefined;
   hint: string;
   icon: LucideIcon;
   tone: keyof typeof TONES;
 }) {
   return (
-    <div className="flex min-w-0 flex-col justify-between gap-3 rounded-2xl border border-border bg-surface p-4">
+    <div
+      className="animate-fade-up flex min-w-0 flex-col justify-between gap-3 rounded-2xl border border-border bg-surface p-4"
+      style={staggerDelay(index)}
+    >
       <div className="flex items-center justify-between gap-2">
         <span className="truncate text-xs font-medium text-muted-foreground">{label}</span>
         <span
@@ -62,8 +70,9 @@ export function SummaryCards({ summary }: { summary: LibrarySummary }) {
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
       <StatCard
+        index={0}
         label="Total de jogos"
-        value={formatNumber(totalGames)}
+        value={<AnimatedNumber value={totalGames} format={formatNumber} />}
         hint={
           summary.addedThisMonth > 0
             ? `+${summary.addedThisMonth} adicionados este mês`
@@ -73,29 +82,33 @@ export function SummaryCards({ summary }: { summary: LibrarySummary }) {
         tone="primary"
       />
       <StatCard
+        index={1}
         label="Jogos zerados"
-        value={formatNumber(summary.completedGames)}
+        value={<AnimatedNumber value={summary.completedGames} format={formatNumber} />}
         hint={`${formatPercent(summary.completionRate)} da biblioteca`}
         icon={CheckCircle2}
         tone="success"
       />
       <StatCard
+        index={2}
         label="Jogando agora"
-        value={formatNumber(summary.playingGames)}
+        value={<AnimatedNumber value={summary.playingGames} format={formatNumber} />}
         hint={describePlaying(summary.playingTitles)}
         icon={PlayCircle}
         tone="primary"
       />
       <StatCard
+        index={3}
         label="Lista de desejos"
-        value={formatNumber(summary.wishlistGames)}
+        value={<AnimatedNumber value={summary.wishlistGames} format={formatNumber} />}
         hint="ainda não jogados"
         icon={Heart}
         tone="violet"
       />
       <StatCard
+        index={4}
         label="Horas jogadas"
-        value={formatNumber(summary.totalHours)}
+        value={<AnimatedNumber value={summary.totalHours} format={formatNumber} />}
         suffix="h"
         hint={
           summary.gamesWithHours === 1
@@ -106,8 +119,15 @@ export function SummaryCards({ summary }: { summary: LibrarySummary }) {
         tone="primary"
       />
       <StatCard
+        index={5}
         label="Nota média"
-        value={summary.averageRating === null ? "—" : formatRating(summary.averageRating)}
+        value={
+          summary.averageRating === null ? (
+            "—"
+          ) : (
+            <AnimatedNumber value={summary.averageRating} format={formatRating} />
+          )
+        }
         suffix={summary.averageRating === null ? undefined : "/ 10"}
         hint={
           summary.ratedGames === 1 ? "1 jogo avaliado" : `${summary.ratedGames} jogos avaliados`

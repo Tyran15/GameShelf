@@ -230,3 +230,66 @@
     0 0 0 4px oklch(0.8 0.16 202 / 0.12),
     0 16px 36px oklch(0 0 0 / 0.5);
 }
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@utility animate-fade-up {
+  animation: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes grow-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes donut-draw {
+  from {
+    stroke-dasharray: 0 1000;
+  }
+}
+
+@utility animate-grow-x {
+  transform-origin: left;
+  animation: grow-x 0.7s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@utility animate-grow-y {
+  transform-origin: bottom;
+  animation: grow-y 0.7s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@utility animate-donut-draw {
+  animation: donut-draw 0.9s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}

@@ -11,6 +11,7 @@ import { useGames } from "@/hooks/useGames";
 import { useGenres } from "@/hooks/useGenres";
 import { usePlatforms } from "@/hooks/usePlatforms";
 import { LibraryStats } from "@/components/LibraryStats";
+import { staggerDelay } from "@/lib/motion";
 
 const EMPTY_FILTERS: FiltersValue = {
   search: "",
@@ -46,7 +47,7 @@ export function LibraryPage() {
 
   return (
     <div className="page-shell space-y-6">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <header className="animate-fade-up flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold sm:text-4xl">
             Sua <span className="text-gradient-brand">biblioteca</span>
@@ -67,12 +68,14 @@ export function LibraryPage() {
         <LibraryStats games={libraryStats.data} />
       ) : null}
 
-      <GameFiltersBar
-        value={filters}
-        onChange={setFilters}
-        platforms={platforms.data ?? []}
-        genres={genres.data ?? []}
-      />
+      <div className="animate-fade-up" style={staggerDelay(5)}>
+        <GameFiltersBar
+          value={filters}
+          onChange={setFilters}
+          platforms={platforms.data ?? []}
+          genres={genres.data ?? []}
+        />
+      </div>
 
       {games.isLoading ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
@@ -101,8 +104,13 @@ export function LibraryPage() {
             {games.data!.length} {games.data!.length === 1 ? "jogo" : "jogos"}
           </p>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {games.data!.map((game) => (
-              <GameCard key={game.id} game={game} />
+            {games.data!.map((game, index) => (
+              <GameCard
+                key={game.id}
+                game={game}
+                className="animate-fade-up"
+                style={staggerDelay(index + 6)}
+              />
             ))}
           </div>
         </>

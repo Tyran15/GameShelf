@@ -42,7 +42,7 @@ function buildStats(games: Game[]) {
     platforms,
     genres,
     statuses: calculateStatusDistribution(games),
-    topHours: calculateTopHours(games),
+    hours: calculateTopHours(games, Number.POSITIVE_INFINITY),
     ratings: calculateRatingStats(games),
     featured: getFeaturedGames(games),
   };
@@ -65,7 +65,7 @@ export function StatsPage() {
 
   return (
     <div className="page-shell space-y-6">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <header className="animate-fade-up flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <h1 className="text-3xl font-bold sm:text-4xl">
             Estatísticas da <span className="text-gradient-brand">biblioteca</span>
@@ -120,8 +120,13 @@ export function StatsPage() {
               slices={stats.statuses}
               totalGames={stats.summary.totalGames}
               completionRate={stats.summary.completionRate}
+              index={6}
             />
-            <HoursPlayedChart entries={stats.topHours} totalHours={stats.summary.totalHours} />
+            <HoursPlayedChart
+              entries={stats.hours}
+              totalHours={stats.summary.totalHours}
+              index={7}
+            />
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2">
@@ -130,24 +135,31 @@ export function StatsPage() {
                 icon={Monitor}
                 title="Jogos por plataforma"
                 entries={stats.platforms}
+                index={8}
               />
             )}
             <DistributionList
               icon={Tag}
               title="Gêneros mais presentes"
               entries={stats.genres}
+              index={9}
               className={isFilteredByPlatform ? "lg:col-span-2" : undefined}
             />
           </div>
 
-          <RatingDistribution stats={stats.ratings} totalGames={stats.summary.totalGames} />
+          <RatingDistribution
+            stats={stats.ratings}
+            totalGames={stats.summary.totalGames}
+            index={10}
+          />
 
-          <FeaturedGames featured={stats.featured} />
+          <FeaturedGames featured={stats.featured} index={11} />
 
           <LibraryInsights
             summary={stats.summary}
             topPlatform={isFilteredByPlatform ? null : (stats.platforms[0] ?? null)}
             topGenre={stats.genres[0] ?? null}
+            index={12}
           />
         </>
       )}

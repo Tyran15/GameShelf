@@ -7,6 +7,7 @@ import {
   percentOf,
   type RatingStats,
 } from "@/lib/libraryStats";
+import { staggerMs } from "@/lib/motion";
 import { SectionEmpty, StatsSection } from "./StatsSection";
 
 const CHART_HEIGHT = 128;
@@ -37,9 +38,11 @@ function Metric({
 export function RatingDistribution({
   stats,
   totalGames,
+  index = 0,
 }: {
   stats: RatingStats;
   totalGames: number;
+  index?: number;
 }) {
   const { buckets, maxCount, ratedGames, average, highest, lowest } = stats;
 
@@ -47,6 +50,7 @@ export function RatingDistribution({
     <StatsSection
       icon={Star}
       title="Distribuição das avaliações"
+      index={index}
       aside={`${ratedGames} de ${totalGames} ${totalGames === 1 ? "jogo avaliado" : "jogos avaliados"} (${formatPercent(
         percentOf(ratedGames, totalGames),
       )})`}
@@ -105,10 +109,13 @@ export function RatingDistribution({
                     </span>
                     <div
                       className={cn(
-                        "w-full rounded-t",
+                        "animate-grow-y w-full rounded-t transition-[height] duration-500 motion-reduce:transition-none",
                         bucket.count === 0 ? "bg-muted" : isPeak ? "bg-primary" : "bg-primary/40",
                       )}
-                      style={{ height }}
+                      style={{
+                        height,
+                        animationDelay: `${staggerMs(index, 200 + bucket.rating * 40)}ms`,
+                      }}
                     />
                     <span
                       className={cn(

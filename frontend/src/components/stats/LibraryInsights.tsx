@@ -26,11 +26,13 @@ export function LibraryInsights({
   summary,
   topPlatform,
   topGenre,
+  index = 0,
 }: {
   summary: LibrarySummary;
   /** Omitido quando a página está filtrada por uma única plataforma. */
   topPlatform: CountEntry | null;
   topGenre: CountEntry | null;
+  index?: number;
 }) {
   const insights: Insight[] = [
     {
@@ -110,7 +112,7 @@ export function LibraryInsights({
   );
 
   return (
-    <StatsSection icon={Sparkles} title="Insights da biblioteca">
+    <StatsSection icon={Sparkles} title="Insights da biblioteca" index={index}>
       <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(15rem,1fr))]">
         {insights.map((insight) => (
           <div key={insight.key} className="flex gap-3 rounded-xl bg-secondary/60 p-4">

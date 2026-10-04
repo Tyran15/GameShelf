@@ -1,4 +1,6 @@
 import { CheckCircle2, Heart, LayoutGrid, PlayCircle } from "lucide-react";
+import { AnimatedNumber } from "@/components/AnimatedNumber";
+import { staggerDelay } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import type { Game } from "@/types/game";
 
@@ -36,8 +38,8 @@ export function LibraryStats({ games }: { games: Game[] }) {
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      {stats.map((stat) => (
-        <StatCard key={stat.label} {...stat} />
+      {stats.map((stat, index) => (
+        <StatCard key={stat.label} index={index} {...stat} />
       ))}
     </div>
   );
@@ -55,14 +57,19 @@ function StatCard({
   value,
   icon: Icon,
   tone,
+  index,
 }: {
+  index: number;
   label: string;
   value: number;
   icon: typeof LayoutGrid;
   tone: keyof typeof ICON_WRAP_STYLES;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4">
+    <div
+      className="animate-fade-up flex items-center gap-3 rounded-2xl border border-border bg-surface p-4"
+      style={staggerDelay(index + 1)}
+    >
       <span
         className={cn(
           "flex size-10 shrink-0 items-center justify-center rounded-xl",
@@ -72,7 +79,9 @@ function StatCard({
         <Icon className="size-5" />
       </span>
       <div className="min-w-0">
-        <p className="text-2xl font-bold leading-none font-display">{value}</p>
+        <p className="text-2xl font-bold leading-none font-display">
+          <AnimatedNumber value={value} />
+        </p>
         <p className="mt-1 truncate text-xs text-muted-foreground">{label}</p>
       </div>
     </div>

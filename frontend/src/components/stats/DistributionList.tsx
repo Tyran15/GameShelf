@@ -1,6 +1,8 @@
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatPercent, type CountEntry } from "@/lib/libraryStats";
+import { staggerMs } from "@/lib/motion";
+import { StatsDetailsDialog } from "./StatsDetailsDialog";
 import { SectionEmpty, StatsSection } from "./StatsSection";
 
 const BAR_COLORS = [
@@ -22,12 +24,14 @@ export function DistributionList({
   entries,
   limit = 6,
   className,
+  index = 0,
 }: {
   icon: LucideIcon;
   title: string;
   entries: CountEntry[];
   limit?: number;
   className?: string | undefined;
+  index?: number;
 }) {
   const visible = entries.slice(0, limit);
   const hidden = entries.length - visible.length;
@@ -37,6 +41,7 @@ export function DistributionList({
       icon={icon}
       title={title}
       className={className}
+      index={index}
       aside={`${entries.length} ${entries.length === 1 ? "item" : "itens"}`}
     >
       {entries.length === 0 ? (
@@ -44,18 +49,36 @@ export function DistributionList({
       ) : (
         <div className="space-y-4">
           <ul className="space-y-3.5">
-            {visible.map((entry, index) => (
+            {visible.map((entry, row) => (
               <DistributionRow
                 key={entry.name}
                 entry={entry}
-                color={BAR_COLORS[index % BAR_COLORS.length]}
+                color={BAR_COLORS[row % BAR_COLORS.length]}
+                delayMs={staggerMs(index, 200 + row * 70)}
               />
             ))}
           </ul>
           {hidden > 0 ? (
-            <p className="border-t border-border pt-3 text-xs text-muted-foreground">
-              + {hidden} {hidden === 1 ? "outro" : "outros"} fora do top {limit}.
-            </p>
+            <div className="space-y-3 border-t border-border pt-3">
+              <p className="text-xs text-muted-foreground">
+                + {hidden} {hidden === 1 ? "outro" : "outros"} fora do top {limit}.
+              </p>
+              <StatsDetailsDialog
+                title={title}
+                description={`${entries.length} itens, ordenados pela quantidade de jogos`}
+              >
+                <ul className="space-y-3.5">
+                  {entries.map((entry, row) => (
+                    <DistributionRow
+                      key={entry.name}
+                      entry={entry}
+                      color={BAR_COLORS[row % BAR_COLORS.length]}
+                      delayMs={200 + Math.min(row, 8) * 70}
+                    />
+                  ))}
+                </ul>
+              </StatsDetailsDialog>
+            </div>
           ) : null}
         </div>
       )}
@@ -63,7 +86,15 @@ export function DistributionList({
   );
 }
 
-function DistributionRow({ entry, color }: { entry: CountEntry; color: string | undefined }) {
+function DistributionRow({
+  entry,
+  color,
+  delayMs,
+}: {
+  entry: CountEntry;
+  color: string | undefined;
+  delayMs: number;
+}) {
   return (
     <li>
       <div className="mb-1.5 flex items-center justify-between gap-3">
@@ -81,7 +112,13 @@ function DistributionRow({ entry, color }: { entry: CountEntry; color: string | 
         </span>
       </div>
       <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-        <div className={cn("h-full rounded-full", color)} style={{ width: `${entry.percent}%` }} />
+        <div
+          className={cn(
+            "animate-grow-x h-full rounded-full transition-[width] duration-500 motion-reduce:transition-none",
+            color,
+          )}
+          style={{ width: `${entry.percent}%`, animationDelay: `${delayMs}ms` }}
+        />
       </div>
     </li>
   );

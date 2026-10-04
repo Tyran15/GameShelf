@@ -20,6 +20,5 @@ export const Route = createFileRoute("/games/$id/")({
 });
 
 function GameDetailsRoute() {
-  const { id } = Route.useParams();
-  return <GameDetailsPage id={Number(id)} />;
+  return <GameDetailsPage />;
 }

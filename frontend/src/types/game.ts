@@ -38,7 +38,7 @@ export interface GameInput {
   backgroundUrl?: string;
   releaseDate?: string;
   status?: GameStatus;
-  rating?: number;
+  rating?: number | null;
   hoursPlayed?: number | null;
   platformId: number;
   genreId: number;

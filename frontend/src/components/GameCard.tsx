@@ -1,12 +1,22 @@
+import type { CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
 import { Clock, Gamepad2 } from "lucide-react";
 import { RatingPill } from "./RatingPill";
 import { StatusBadge } from "./StatusBadge";
 import { useGenres } from "@/hooks/useGenres";
 import { usePlatforms } from "@/hooks/usePlatforms";
+import { cn } from "@/lib/utils";
 import type { Game } from "@/types/game";
 
-export function GameCard({ game }: { game: Game }) {
+export function GameCard({
+  game,
+  className,
+  style,
+}: {
+  game: Game;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+}) {
   const platforms = usePlatforms();
   const genres = useGenres();
 
@@ -17,7 +27,11 @@ export function GameCard({ game }: { game: Game }) {
     <Link
       to="/games/$id"
       params={{ id: String(game.id) }}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-card transition-all hover:-translate-y-0.5 hover:border-primary/50"
+      style={style}
+      className={cn(
+        "group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-card transition-all hover:-translate-y-0.5 hover:border-primary/50",
+        className,
+      )}
     >
       {/* Capa em proporção 2:3 com blur de fundo */}
       <div className="relative aspect-[2/3] overflow-hidden bg-secondary">

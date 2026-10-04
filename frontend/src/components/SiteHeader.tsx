@@ -21,7 +21,8 @@ function resolveBackTarget(pathname: string): BackTarget | null {
 
   // /games/:id/edit volta para /games/:id
   const editMatch = pathname.match(/^\/games\/(\d+)\/edit\/?$/);
-  if (editMatch) return { type: "game-detail", gameId: editMatch[1] };
+  const gameId = editMatch?.[1];
+  if (gameId) return { type: "game-detail", gameId };
 
   // Qualquer outra rota não-home volta para a biblioteca
   return { type: "home" };
