@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useGames } from "@/hooks/useGames";
 import { downloadTextFile, exportFilename, gamesToCsv, gamesToJson } from "@/lib/exportLibrary";
+import { ImportCard } from "./ImportCard";
 import { SettingsSection } from "./SettingsSection";
 
 function ExportCard({
@@ -59,7 +60,7 @@ export function DataSection({ index }: { index: number }) {
       id="dados"
       icon={Database}
       title="Dados"
-      description="Seus jogos são seus: baixe uma cópia da biblioteca quando quiser."
+      description="Seus jogos são seus: baixe uma cópia da biblioteca ou importe jogos de um arquivo."
       index={index}
     >
       <div className="grid gap-3 sm:grid-cols-2">
@@ -97,6 +98,8 @@ export function DataSection({ index }: { index: number }) {
           {list.length} {list.length === 1 ? "jogo" : "jogos"} serão incluídos no arquivo.
         </p>
       )}
+
+      <ImportCard />
     </SettingsSection>
   );
 }

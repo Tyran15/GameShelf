@@ -157,10 +157,10 @@ export function ApiKeysSection({ index }: { index: number }) {
       <div className="flex items-start gap-2 rounded-xl bg-muted/50 p-3 text-xs text-muted-foreground">
         <ShieldAlert className="mt-0.5 size-4 shrink-0" />
         <p>
-          As chaves ficam salvas só neste navegador, sem passar pelo servidor do GameShelf, e a
-          chave completa não é exibida depois de salva. Qualquer script executado nesta página
-          consegue lê-las, então use apenas chaves pessoais e gratuitas. Por enquanto elas só ficam
-          guardadas: serão usadas quando a busca automática de capas e dados for ativada.
+          As chaves ficam salvas só neste navegador e a chave completa não é exibida depois de
+          salva. Qualquer script executado nesta página consegue lê-las. Atenção: hoje a busca de
+          dados e capas usa as chaves configuradas no servidor (RAWG_API_KEY e STEAMGRIDDB_API_KEY),
+          e estas chaves ainda não são enviadas a ele.
         </p>
       </div>
     </SettingsSection>
