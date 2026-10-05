@@ -1,4 +1,5 @@
 import { useRef, useState, type ChangeEvent } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { FileUp } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -10,6 +11,7 @@ import {
 import { ImportDialog, type PendingImport } from "./ImportDialog";
 
 export function ImportCard() {
+  const queryClient = useQueryClient();
   const inputRef = useRef<HTMLInputElement>(null);
   const [pending, setPending] = useState<PendingImport | null>(null);
 
@@ -27,6 +29,8 @@ export function ImportCard() {
 
     try {
       const parsed = parseImportFile(file.name, await file.text());
+      // Atualiza a lista de jogos antes de comparar, para não usar um cache desatualizado.
+      void queryClient.refetchQueries({ queryKey: ["games"] });
       setPending({ ...parsed, fileName: file.name });
     } catch (error) {
       toast.error(

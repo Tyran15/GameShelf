@@ -421,18 +421,34 @@ export function parseImportFile(filename: string, text: string): ParsedImportFil
 // Plano de importação
 // ---------------------------------------------------------------------------
 
+/**
+ * Como detectar jogos que já existem:
+ * - "title": mesmo título, em qualquer plataforma (padrão, o mais protetor);
+ * - "title-platform": mesmo título na mesma plataforma;
+ * - "none": não ignora nada.
+ */
+export type DuplicateMode = "title" | "title-platform" | "none";
+
+export interface DuplicateEntry {
+  game: ImportedGame;
+  /** Onde está o jogo equivalente: já na biblioteca ou repetido antes, no próprio arquivo. */
+  reason: "library" | "file";
+  /** Plataforma do jogo equivalente (útil quando a comparação ignora a plataforma). */
+  matchedPlatform: string;
+}
+
 export interface ImportPlan {
   /** Jogos que serão criados. */
   toImport: ImportedGame[];
   /** Jogos ignorados por já existirem (ou por repetirem outro do próprio arquivo). */
-  duplicates: ImportedGame[];
+  duplicates: DuplicateEntry[];
   /** Nomes (já arrumados) de plataformas/gêneros que ainda não existem e serão criados. */
   newPlatforms: string[];
   newGenres: string[];
 }
 
-function duplicateKey(title: string, platformName: string): string {
-  return `${foldText(title)}|${foldText(platformName)}`;
+function duplicateKey(title: string, platformName: string, mode: DuplicateMode): string {
+  return mode === "title" ? foldText(title) : `${foldText(title)}|${foldText(platformName)}`;
 }
 
 function missingNames(names: string[], existing: { name: string }[]): string[] {
@@ -448,21 +464,32 @@ function missingNames(names: string[], existing: { name: string }[]): string[] {
   return missing;
 }
 
-/** Um jogo é duplicado quando já existe outro com o mesmo título na mesma plataforma. */
 export function buildImportPlan(
   games: ImportedGame[],
   existing: { games: Game[]; platforms: Platform[]; genres: Genre[] },
-  options: { skipDuplicates: boolean },
+  options: { duplicateMode: DuplicateMode },
 ): ImportPlan {
-  const seen = new Set(existing.games.map((g) => duplicateKey(g.title, g.platform.name)));
+  const { duplicateMode } = options;
+  const seen = new Map<string, { source: "library" | "file"; platform: string }>();
   const toImport: ImportedGame[] = [];
-  const duplicates: ImportedGame[] = [];
+  const duplicates: DuplicateEntry[] = [];
+
+  if (duplicateMode !== "none") {
+    for (const game of existing.games) {
+      const key = duplicateKey(game.title, game.platform.name, duplicateMode);
+      if (!seen.has(key)) seen.set(key, { source: "library", platform: game.platform.name });
+    }
+  }
 
   for (const game of games) {
-    const key = duplicateKey(game.title, game.platformName);
-    if (options.skipDuplicates && seen.has(key)) duplicates.push(game);
-    else toImport.push(game);
-    seen.add(key);
+    const key = duplicateKey(game.title, game.platformName, duplicateMode);
+    const match = duplicateMode === "none" ? undefined : seen.get(key);
+    if (match) {
+      duplicates.push({ game, reason: match.source, matchedPlatform: match.platform });
+    } else {
+      toImport.push(game);
+      if (!seen.has(key)) seen.set(key, { source: "file", platform: game.platformName });
+    }
   }
 
   return {
