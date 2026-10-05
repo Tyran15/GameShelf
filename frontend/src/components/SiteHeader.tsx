@@ -9,8 +9,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 const NAV_LINKS = [
   { to: "/", label: "Biblioteca" },
   { to: "/stats", label: "Estatísticas" },
-  { to: "/platforms", label: "Plataformas" },
-  { to: "/genres", label: "Gêneros" },
   { to: "/settings", label: "Configurações" },
 ] as const;
 
