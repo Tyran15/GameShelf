@@ -6,24 +6,35 @@ export type RegisterPayload = {
   banner: File | null;
 };
 
-/**
- * Cadastro de usuário.
- *
- * SIMULADO: o backend ainda não tem autenticação nem upload (escopo da V2).
- * Quando existir, envie como multipart (arquivos não vão em JSON):
- *
- *   const body = new FormData();
- *   body.append("nickname", payload.nickname);
- *   body.append("email", payload.email);
- *   body.append("password", payload.password);
- *   if (payload.avatar) body.append("avatar", payload.avatar);
- *   if (payload.banner) body.append("banner", payload.banner);
- *   const res = await fetch(`${API_URL}/api/auth/register`, { method: "POST", body });
- *   if (!res.ok) throw new Error((await res.json()).message ?? "Falha no cadastro");
- *
- * Não defina Content-Type manualmente: o navegador cria o boundary sozinho.
- */
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+    public fieldErrors: Record<string, string> = {},
+  ) {
+    super(message);
+  }
+}
+
+export const API_URL: string = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
+
 export async function registerUser(payload: RegisterPayload): Promise<void> {
-  void payload; // não registre a senha em logs
-  await new Promise((resolve) => setTimeout(resolve, 1200));
+  const body = new FormData();
+  body.append("nickname", payload.nickname);
+  body.append("email", payload.email);
+  body.append("password", payload.password);
+  if (payload.avatar) body.append("avatar", payload.avatar);
+  if (payload.banner) body.append("banner", payload.banner);
+
+  // Não defina Content-Type: o navegador cria o boundary do multipart sozinho.
+  const res = await fetch(`${API_URL}/api/auth/register`, {
+    method: "POST",
+    body,
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new ApiError(data.message ?? "Não foi possível criar a conta.", res.status, data.errors ?? {});
+  }
 }

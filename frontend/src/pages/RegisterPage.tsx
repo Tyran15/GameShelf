@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { ApiError } from "@/services/auth";
 import {
   AtSign,
   Camera,
@@ -135,7 +136,15 @@ export function RegisterPage() {
       navigate({ to: "/login" });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Não foi possível criar a conta.");
+      const fields = ["nickname", "email", "password", "avatar", "banner"] as const;
+      const fieldErrors = error instanceof ApiError ? error.fieldErrors : {};
+      const matched = fields.filter((field) => fieldErrors[field]);
+
+      if (matched.length > 0) {
+        matched.forEach((field) => setError(field, { type: "server", message: fieldErrors[field] }));
+      } else {
+        toast.error(error instanceof Error ? error.message : "Não foi possível criar a conta.");
+      }
       captchaRef.current?.refresh();
       resetField("captcha");
     },
