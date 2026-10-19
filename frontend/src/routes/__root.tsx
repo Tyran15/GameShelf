@@ -6,6 +6,7 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  useLocation, // <-- ADICIONADO AQUI
   type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
@@ -149,19 +150,29 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient, locale } = Route.useRouteContext();
   const i18n = getI18nInstance(locale);
+  
+  const location = useLocation();
+  const isLoginPage = location.pathname === "/login";
+  const isAuthPage = location.pathname === "/login" || location.pathname === "/cadastro"; 
+
+  {!isAuthPage && <SiteHeader />}
 
   return (
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={queryClient}>
         <div className="flex min-h-screen flex-col">
-          <SiteHeader />
-          {/* Adicionamos 'flex flex-col' aqui: */}
+          
+          {!isLoginPage && <SiteHeader />}
+          
           <main className="relative isolate flex flex-1 flex-col">
             <Outlet />
           </main>
+          
+          {/* FOOTER SEM A CONDIÇÃO: Aparece sempre */}
           <footer className="relative z-10 border-t border-border bg-background py-6 text-center text-xs text-muted-foreground">
             GameShelf · biblioteca pessoal de jogos
           </footer>
+          
         </div>
         <Toaster richColors position="top-right" />
       </QueryClientProvider>

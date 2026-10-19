@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GenresRouteImport } from './routes/genres'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as PlatformsRouteImport } from './routes/platforms'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StatsRouteImport } from './routes/stats'
@@ -26,6 +27,11 @@ const IndexRoute = IndexRouteImport.update({
 const GenresRoute = GenresRouteImport.update({
   id: '/genres',
   path: '/genres',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlatformsRoute = PlatformsRouteImport.update({
@@ -62,6 +68,7 @@ const GamesIdEditRoute = GamesIdEditRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/genres': typeof GenresRoute
+  '/login': typeof LoginRoute
   '/platforms': typeof PlatformsRoute
   '/settings': typeof SettingsRoute
   '/stats': typeof StatsRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/genres': typeof GenresRoute
+  '/login': typeof LoginRoute
   '/platforms': typeof PlatformsRoute
   '/settings': typeof SettingsRoute
   '/stats': typeof StatsRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/genres': typeof GenresRoute
+  '/login': typeof LoginRoute
   '/platforms': typeof PlatformsRoute
   '/settings': typeof SettingsRoute
   '/stats': typeof StatsRoute
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/genres'
+    | '/login'
     | '/platforms'
     | '/settings'
     | '/stats'
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/genres'
+    | '/login'
     | '/platforms'
     | '/settings'
     | '/stats'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/genres'
+    | '/login'
     | '/platforms'
     | '/settings'
     | '/stats'
@@ -126,6 +138,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   GenresRoute: typeof GenresRoute
+  LoginRoute: typeof LoginRoute
   PlatformsRoute: typeof PlatformsRoute
   SettingsRoute: typeof SettingsRoute
   StatsRoute: typeof StatsRoute
@@ -148,6 +161,13 @@ declare module '@tanstack/react-router' {
       path: '/genres'
       fullPath: '/genres'
       preLoaderRoute: typeof GenresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/platforms': {
@@ -198,6 +218,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   GenresRoute: GenresRoute,
+  LoginRoute: LoginRoute,
   PlatformsRoute: PlatformsRoute,
   SettingsRoute: SettingsRoute,
   StatsRoute: StatsRoute,
