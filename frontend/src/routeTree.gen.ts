@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as GenresRouteImport } from './routes/genres'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PlatformsRouteImport } from './routes/platforms'
@@ -22,6 +23,11 @@ import { Route as GamesIdEditRouteImport } from './routes/games.$id.edit'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CadastroRoute = CadastroRouteImport.update({
+  id: '/cadastro',
+  path: '/cadastro',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GenresRoute = GenresRouteImport.update({
@@ -67,6 +73,7 @@ const GamesIdEditRoute = GamesIdEditRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/cadastro': typeof CadastroRoute
   '/genres': typeof GenresRoute
   '/login': typeof LoginRoute
   '/platforms': typeof PlatformsRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cadastro': typeof CadastroRoute
   '/genres': typeof GenresRoute
   '/login': typeof LoginRoute
   '/platforms': typeof PlatformsRoute
@@ -90,6 +98,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/cadastro': typeof CadastroRoute
   '/genres': typeof GenresRoute
   '/login': typeof LoginRoute
   '/platforms': typeof PlatformsRoute
@@ -103,6 +112,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/cadastro'
     | '/genres'
     | '/login'
     | '/platforms'
@@ -114,6 +124,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/cadastro'
     | '/genres'
     | '/login'
     | '/platforms'
@@ -125,6 +136,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/cadastro'
     | '/genres'
     | '/login'
     | '/platforms'
@@ -137,6 +149,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CadastroRoute: typeof CadastroRoute
   GenresRoute: typeof GenresRoute
   LoginRoute: typeof LoginRoute
   PlatformsRoute: typeof PlatformsRoute
@@ -154,6 +167,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cadastro': {
+      id: '/cadastro'
+      path: '/cadastro'
+      fullPath: '/cadastro'
+      preLoaderRoute: typeof CadastroRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/genres': {
@@ -217,6 +237,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CadastroRoute: CadastroRoute,
   GenresRoute: GenresRoute,
   LoginRoute: LoginRoute,
   PlatformsRoute: PlatformsRoute,
