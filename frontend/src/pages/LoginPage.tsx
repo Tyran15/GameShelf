@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
+import { useState, type FormEvent, type ReactNode } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowUpRight,
   CircleAlert,
@@ -18,6 +19,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SESSION_QUERY_KEY } from "@/hooks/useSession";
+import { ApiError, loginUser } from "@/services/auth";
 
 /* -------------------------------------------------------------------------- */
 /*  Subcomponentes visuais                                                    */
@@ -53,9 +56,7 @@ function GameCover({
       className={[
         "relative shrink-0 overflow-hidden rounded-2xl border bg-linear-to-br transition-transform duration-300",
         tone,
-        featured
-          ? "card-glow-ring z-30 h-72 w-48 border-primary/60"
-          : "h-64 w-44 border-border",
+        featured ? "card-glow-ring z-30 h-72 w-48 border-primary/60" : "h-64 w-44 border-border",
         className,
       ].join(" ")}
     >
@@ -154,10 +155,22 @@ function StatCard({ label, value, hint, progress, tone, icon }: StatCardProps) {
 function GoogleIcon() {
   return (
     <svg className="size-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z" fill="#EA4335" />
-      <path d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5.1 3.7-8.9z" fill="#4285F4" />
-      <path d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.8s.2-2.1.4-2.8L1.9 6.3C.7 8.7 0 10.3 0 12s.7 3.3 1.9 5.7l3.7-2.9z" fill="#FBBC05" />
-      <path d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.4-6.4-5.2L1.9 16c1.8 3.7 5.6 7 10.1 7z" fill="#34A853" />
+      <path
+        d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z"
+        fill="#EA4335"
+      />
+      <path
+        d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5.1 3.7-8.9z"
+        fill="#4285F4"
+      />
+      <path
+        d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.8s.2-2.1.4-2.8L1.9 6.3C.7 8.7 0 10.3 0 12s.7 3.3 1.9 5.7l3.7-2.9z"
+        fill="#FBBC05"
+      />
+      <path
+        d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.4-6.4-5.2L1.9 16c1.8 3.7 5.6 7 10.1 7z"
+        fill="#34A853"
+      />
     </svg>
   );
 }
@@ -165,11 +178,7 @@ function GoogleIcon() {
 // NOVO ÍCONE DA STEAM
 function SteamIcon() {
   return (
-    <svg
-      className="size-4 shrink-0 fill-current"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
+    <svg className="size-4 shrink-0 fill-current" viewBox="0 0 24 24" aria-hidden="true">
       <path d="M11.979 0C5.678 0 .511 4.556 0 10.719c0 .003 0 .004 0 .004l6.444 2.654a3.23 3.23 0 0 1 1.828-.567c.056 0 .111.001.166.004l2.865-4.148v-.057a4.305 4.305 0 1 1 4.305 4.305h-.099l-4.087 2.916c0 .048.002.096.002.145a3.231 3.231 0 0 1-6.43.629L.621 14.673C2.041 20.335 7.491 24 11.979 24c6.627 0 12-5.373 12-12s-5.373-12-12-12zm-5.042 15.844l-1.436-.591a2.44 2.44 0 0 0 4.355-1.52 2.44 2.44 0 0 0-4.258-1.598l1.484.61a1.794 1.794 0 1 1-1.358 3.307h-.002l-.002.001-.001-.001.001-.001.002-.002c.122.033.252.05.387.05a1.203 1.203 0 0 0 0-2.406 1.21 1.21 0 0 0-1.172 1.146zm10.77-6.573a2.865 2.865 0 1 0 0-5.73 2.865 2.865 0 0 0 0 5.73zm0-4.72a1.855 1.855 0 1 1 0 3.71 1.855 1.855 0 0 1 0-3.71z" />
     </svg>
   );
@@ -182,19 +191,43 @@ function SteamIcon() {
 type FormErrors = { email?: string; password?: string };
 
 export function LoginPage() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [formError, setFormError] = useState<string | null>(null);
 
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
+  const mutation = useMutation({
+    mutationFn: loginUser,
+    onSuccess: (user) => {
+      // Já grava o usuário no cache da sessão: o header aparece sem esperar outro /me.
+      queryClient.setQueryData(SESSION_QUERY_KEY, user);
+      navigate({ to: "/" });
+    },
+    onError: (error) => {
+      if (error instanceof ApiError) {
+        const next: FormErrors = {};
+        const emailError = error.fieldErrors["email"];
+        const passwordError = error.fieldErrors["password"];
+        if (emailError) next.email = emailError;
+        if (passwordError) next.password = passwordError;
+        if (next.email || next.password) {
+          setErrors(next);
+          return;
+        }
+        // 401 (credenciais inválidas) e falhas de rede caem aqui.
+        setFormError(error.message);
+        return;
+      }
+      setFormError("Não foi possível entrar. Tente novamente.");
+    },
+  });
+
+  const isLoading = mutation.isPending;
 
   function validate(): FormErrors {
     const next: FormErrors = {};
@@ -206,12 +239,12 @@ export function LoginPage() {
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setFormError(null);
     const nextErrors = validate();
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
-    setIsLoading(true);
-    timerRef.current = setTimeout(() => setIsLoading(false), 2000);
+    mutation.mutate({ email: email.trim(), password });
   }
 
   return (
@@ -234,11 +267,7 @@ export function LoginPage() {
         {/* Topo: logo + link */}
         <header className="relative z-10 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img
-              src="/favicon.png"
-              alt="GameShelf Ícone"
-              className="h-6 w-6 object-contain"
-            />
+            <img src="/favicon.png" alt="GameShelf Ícone" className="h-6 w-6 object-contain" />
             <span className="font-display text-xl font-bold tracking-tight text-foreground">
               Game<span className="text-primary">Shelf</span>
             </span>
@@ -252,8 +281,8 @@ export function LoginPage() {
               Sua biblioteca de jogos, <span className="text-gradient-brand">organizada.</span>
             </h1>
             <p className="max-w-md text-sm text-muted-foreground">
-              Cadastre seus jogos, organize por plataforma e gênero e acompanhe o que você já
-              zerou, está jogando ou quer jogar.
+              Cadastre seus jogos, organize por plataforma e gênero e acompanhe o que você já zerou,
+              está jogando ou quer jogar.
             </p>
           </div>
 
@@ -326,10 +355,7 @@ export function LoginPage() {
       <section className="flex items-center justify-center p-6 sm:p-10 lg:p-12">
         <div className="w-full max-w-[400px]">
           <div className="animate-fade-up relative overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8">
-            <div
-              aria-hidden="true"
-              className="bg-gradient-brand absolute inset-x-0 top-0 h-1"
-            />
+            <div aria-hidden="true" className="bg-gradient-brand absolute inset-x-0 top-0 h-1" />
 
             <div className="mb-6 space-y-1.5">
               <h2 className="text-2xl font-bold">Entrar</h2>
@@ -442,8 +468,22 @@ export function LoginPage() {
                 </a>
               </div>
 
+              {formError && (
+                <p
+                  role="alert"
+                  className="flex items-center gap-1.5 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive"
+                >
+                  <CircleAlert className="size-3.5 shrink-0" aria-hidden="true" />
+                  {formError}
+                </p>
+              )}
+
               {/* Ação principal */}
-              <Button type="submit" disabled={isLoading} className="mt-2 w-full gap-2 font-semibold">
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="mt-2 w-full gap-2 font-semibold"
+              >
                 {isLoading ? (
                   <>
                     <Loader2 className="size-4 animate-spin" aria-hidden="true" />

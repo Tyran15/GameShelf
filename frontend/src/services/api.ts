@@ -44,7 +44,8 @@ export async function request<T>(
   let response: Response;
 
   try {
-    const init: RequestInit = { method };
+    // credentials: "include" faz o navegador enviar o cookie de sessão (httpOnly) à API.
+    const init: RequestInit = { method, credentials: "include" };
     if (body !== undefined) {
       init.headers = { "Content-Type": "application/json" };
       init.body = JSON.stringify(body);
@@ -59,7 +60,15 @@ export async function request<T>(
   }
 
   const text = await response.text();
-  const data = text ? (JSON.parse(text) as unknown) : null;
+  let data: unknown = null;
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      // Resposta que não é JSON (ex.: página HTML de erro 500): cai na mensagem padrão.
+      data = null;
+    }
+  }
 
   if (!response.ok) {
     const payload = (data ?? {}) as {
@@ -78,6 +87,7 @@ export async function request<T>(
 
 function defaultMessage(status: number) {
   if (status === 400) return "Dados inválidos. Revise os campos do formulário.";
+  if (status === 401) return "Sua sessão expirou. Entre novamente.";
   if (status === 404) return "Registro não encontrado.";
   if (status >= 500) return "Erro interno no servidor. Tente novamente.";
   return "Ocorreu um erro inesperado.";

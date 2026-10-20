@@ -14,10 +14,12 @@ import { I18nextProvider } from "react-i18next";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { AuthGate } from "@/components/AuthGate";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Toaster } from "@/components/ui/sonner";
 import { THEME_INIT_SCRIPT } from "../lib/theme";
 import { SETTINGS_INIT_SCRIPT } from "../lib/settings";
+import { isPublicPath } from "../lib/publicPaths";
 import { resolveServerLocale, getI18nInstance } from "../lib/i18n";
 
 function NotFoundComponent() {
@@ -150,29 +152,26 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient, locale } = Route.useRouteContext();
   const i18n = getI18nInstance(locale);
-  
-  const location = useLocation();
-  const isLoginPage = location.pathname === "/login";
-  const isAuthPage = location.pathname === "/login" || location.pathname === "/cadastro"; 
 
-  {!isAuthPage && <SiteHeader />}
+  // select: só re-renderiza quando o pathname muda, não a cada mudança de location.
+  const pathname = useLocation({ select: (loc) => loc.pathname });
+  const showHeader = !isPublicPath(pathname);
 
   return (
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={queryClient}>
         <div className="flex min-h-screen flex-col">
-          
-          {!isLoginPage && <SiteHeader />}
-          
+          {showHeader && <SiteHeader />}
+
           <main className="relative isolate flex flex-1 flex-col">
-            <Outlet />
+            <AuthGate>
+              <Outlet />
+            </AuthGate>
           </main>
-          
-          {/* FOOTER SEM A CONDIÇÃO: Aparece sempre */}
+
           <footer className="relative z-10 border-t border-border bg-background py-6 text-center text-xs text-muted-foreground">
             GameShelf · biblioteca pessoal de jogos
           </footer>
-          
         </div>
         <Toaster richColors position="top-right" />
       </QueryClientProvider>

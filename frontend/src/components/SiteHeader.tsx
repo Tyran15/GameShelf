@@ -1,10 +1,21 @@
 import { useState } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
-import { ArrowLeft, Menu, Plus } from "lucide-react";
+import { ArrowLeft, ChevronDown, LogOut, Menu, Plus, User } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Logo } from "./Logo";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { useLogout, useSession } from "@/hooks/useSession";
+import { assetUrl, type AuthUser } from "@/services/auth";
 
 const NAV_LINKS = [
   { to: "/", label: "Biblioteca" },
@@ -25,6 +36,85 @@ function resolveBackTarget(pathname: string): BackTarget | null {
 
   // Qualquer outra rota não-home volta para a biblioteca
   return { type: "home" };
+}
+
+/** Foto do usuário. Sem foto (ou se a imagem falhar), o Radix mostra o ícone de reserva. */
+function UserAvatar({ user, className = "size-8" }: { user: AuthUser; className?: string }) {
+  const src = assetUrl(user.avatarUrl);
+
+  return (
+    <Avatar className={className}>
+      {src && <AvatarImage src={src} alt="" />}
+      <AvatarFallback>
+        <User className="size-4 text-muted-foreground" aria-hidden="true" />
+      </AvatarFallback>
+    </Avatar>
+  );
+}
+
+/** Menu do usuário no desktop: avatar + nickname abrem um menu com "Sair". */
+function DesktopUserMenu() {
+  const session = useSession();
+  const logout = useLogout();
+
+  if (session.isPending) {
+    return <span aria-hidden="true" className="size-8 animate-pulse rounded-full bg-muted" />;
+  }
+  const user = session.data;
+  if (!user) return null;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="h-9 gap-2 px-2" aria-label="Menu do usuário">
+          <UserAvatar user={user} className="size-7" />
+          <span className="max-w-28 truncate text-sm font-medium">{user.nickname}</span>
+          <ChevronDown className="size-3.5 text-muted-foreground" aria-hidden="true" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel className="font-normal">
+          <p className="truncate text-sm font-semibold">{user.nickname}</p>
+          <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem disabled={logout.isPending} onSelect={() => logout.mutate()}>
+          <LogOut className="size-4" aria-hidden="true" />
+          Sair
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+/** Rodapé do menu lateral no mobile: quem está logado + botão "Sair". */
+function MobileUserFooter() {
+  const session = useSession();
+  const logout = useLogout();
+
+  const user = session.data;
+  if (!user) return null;
+
+  return (
+    <div className="mt-auto space-y-3 border-t border-border px-4 pt-4 pb-4">
+      <div className="flex items-center gap-3">
+        <UserAvatar user={user} className="size-10" />
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold">{user.nickname}</p>
+          <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+        </div>
+      </div>
+      <Button
+        variant="outline"
+        className="w-full gap-2"
+        disabled={logout.isPending}
+        onClick={() => logout.mutate()}
+      >
+        <LogOut className="size-4" aria-hidden="true" />
+        Sair
+      </Button>
+    </div>
+  );
 }
 
 export function SiteHeader() {
@@ -82,6 +172,7 @@ export function SiteHeader() {
                 <span>Novo jogo</span>
               </Link>
             </Button>
+            <DesktopUserMenu />
           </div>
         </nav>
 
@@ -123,6 +214,8 @@ export function SiteHeader() {
                   </Button>
                 ))}
               </nav>
+
+              <MobileUserFooter />
             </SheetContent>
           </Sheet>
         </div>

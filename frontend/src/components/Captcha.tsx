@@ -16,13 +16,13 @@ type Challenge = { code: string; glyphs: Glyph[]; lines: NoiseLine[] };
 function randomInt(max: number) {
   const buffer = new Uint32Array(1);
   crypto.getRandomValues(buffer);
-  return buffer[0] % max;
+  return (buffer[0] ?? 0) % max;
 }
 
 function createChallenge(): Challenge {
   const step = WIDTH / (LENGTH + 1);
   const glyphs: Glyph[] = Array.from({ length: LENGTH }, (_, i) => ({
-    char: ALPHABET[randomInt(ALPHABET.length)],
+    char: ALPHABET.charAt(randomInt(ALPHABET.length)),
     x: step * (i + 1) + randomInt(7) - 3,
     y: HEIGHT / 2 + 9 + randomInt(9) - 4,
     rotate: randomInt(41) - 20,

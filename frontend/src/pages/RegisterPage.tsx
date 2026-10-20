@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { ApiError } from "@/services/auth";
+import { ApiError, registerUser } from "@/services/auth";
 import {
   AtSign,
   Camera,
@@ -26,7 +26,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Captcha, type CaptchaHandle } from "@/components/Captcha";
-import { registerUser } from "@/services/auth";
 
 const ACCEPTED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
 const MAX_AVATAR_MB = 2;
@@ -55,11 +54,7 @@ const registerSchema = z.object({
     .min(3, "O nickname deve ter ao menos 3 caracteres.")
     .max(20, "O nickname deve ter no máximo 20 caracteres.")
     .regex(/^[A-Za-z0-9_.-]+$/, "Use apenas letras, números, ponto, hífen e underline."),
-  email: z
-    .string()
-    .trim()
-    .min(1, "Informe seu e-mail.")
-    .email("Digite um e-mail válido."),
+  email: z.string().trim().min(1, "Informe seu e-mail.").email("Digite um e-mail válido."),
   password: z
     .string()
     .min(8, "A senha deve ter ao menos 8 caracteres.")
@@ -73,7 +68,7 @@ const registerSchema = z.object({
 type RegisterValues = z.infer<typeof registerSchema>;
 type ImageField = "avatar" | "banner";
 
-function FieldError({ id, message }: { id: string; message?: string }) {
+function FieldError({ id, message }: { id: string; message?: string | undefined }) {
   if (!message) return null;
   return (
     <p id={id} className="flex items-center gap-1 text-xs font-medium text-destructive">
@@ -121,7 +116,14 @@ export function RegisterPage() {
     formState: { errors },
   } = useForm<RegisterValues>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { nickname: "", email: "", password: "", captcha: "", avatar: null, banner: null },
+    defaultValues: {
+      nickname: "",
+      email: "",
+      password: "",
+      captcha: "",
+      avatar: null,
+      banner: null,
+    },
   });
 
   const avatarFile = watch("avatar");
@@ -141,7 +143,10 @@ export function RegisterPage() {
       const matched = fields.filter((field) => fieldErrors[field]);
 
       if (matched.length > 0) {
-        matched.forEach((field) => setError(field, { type: "server", message: fieldErrors[field] }));
+        matched.forEach((field) => {
+          const message = fieldErrors[field];
+          if (message) setError(field, { type: "server", message });
+        });
       } else {
         toast.error(error instanceof Error ? error.message : "Não foi possível criar a conta.");
       }
