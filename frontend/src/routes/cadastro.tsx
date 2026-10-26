@@ -7,7 +7,8 @@ export const Route = createFileRoute("/cadastro")({
       { title: "Criar conta — GameShelf" },
       {
         name: "description",
-        content: "Crie sua conta gratuita e comece a organizar sua biblioteca de jogos no GameShelf.",
+        content:
+          "Crie sua conta gratuita e comece a organizar sua biblioteca de jogos no GameShelf.",
       },
       { property: "og:title", content: "Criar conta — GameShelf" },
       {
