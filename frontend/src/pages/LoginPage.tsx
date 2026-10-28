@@ -460,12 +460,12 @@ export function LoginPage() {
                     Lembrar de mim
                   </Label>
                 </div>
-                <a
-                  href="#"
+                <Link
+                  to="/forgot-password"
                   className="text-xs font-medium text-primary transition-colors hover:underline"
                 >
                   Esqueci minha senha
-                </a>
+                </Link>
               </div>
 
               {formError && (

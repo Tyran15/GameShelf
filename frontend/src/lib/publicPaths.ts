@@ -1,5 +1,5 @@
 /** Rotas que não exigem login (e que escondem o SiteHeader). */
-const PUBLIC_PATHS = ["/login", "/cadastro"];
+const PUBLIC_PATHS = ["/login", "/cadastro", "/forgot-password", "/reset-password"];
 
 export function isPublicPath(pathname: string): boolean {
   // Remove a barra final para "/cadastro/" também ser reconhecido.
