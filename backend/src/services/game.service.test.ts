@@ -13,10 +13,10 @@ vi.mock("../lib/prisma", () => ({
   prisma: {
     game: {
       findMany: vi.fn(),
-      findUnique: vi.fn(),
+      findFirst: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
-      delete: vi.fn(),
+      deleteMany: vi.fn(),
     },
     platform: {
       findUnique: vi.fn(),
@@ -40,6 +40,7 @@ function makeGame(overrides: Partial<Record<string, unknown>> = {}) {
     hoursPlayed: null,
     platformId: 1,
     genreId: 1,
+    userId: 1,
     createdAt: new Date(),
     updatedAt: new Date(),
     platform: { id: 1, name: "PC" },
@@ -56,13 +57,26 @@ describe("getAllGames", () => {
   it("busca todos os jogos sem filtros", async () => {
     vi.mocked(prisma.game.findMany).mockResolvedValue([]);
 
-    await getAllGames();
+    await getAllGames(1);
 
     expect(prisma.game.findMany).toHaveBeenCalledOnce();
     expect(prisma.game.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
+        where: expect.objectContaining({ userId: 1 }),
         include: { platform: true, genre: true },
         orderBy: { updatedAt: "desc" },
+      })
+    );
+  });
+
+  it("só busca os jogos do usuário informado", async () => {
+    vi.mocked(prisma.game.findMany).mockResolvedValue([]);
+
+    await getAllGames(42, { status: "PLAYING" });
+
+    expect(prisma.game.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ userId: 42, status: "PLAYING" }),
       })
     );
   });
@@ -70,7 +84,7 @@ describe("getAllGames", () => {
   it("aplica filtro de status", async () => {
     vi.mocked(prisma.game.findMany).mockResolvedValue([]);
 
-    await getAllGames({ status: "PLAYING" });
+    await getAllGames(1, { status: "PLAYING" });
 
     expect(prisma.game.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -82,7 +96,7 @@ describe("getAllGames", () => {
   it("aplica filtro de busca por título (case insensitive)", async () => {
     vi.mocked(prisma.game.findMany).mockResolvedValue([]);
 
-    await getAllGames({ search: "hollow" });
+    await getAllGames(1, { search: "hollow" });
 
     expect(prisma.game.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -96,7 +110,7 @@ describe("getAllGames", () => {
   it("combina múltiplos filtros", async () => {
     vi.mocked(prisma.game.findMany).mockResolvedValue([]);
 
-    await getAllGames({ status: "PLAYING", platformId: 1, genreId: 2 });
+    await getAllGames(1, { status: "PLAYING", platformId: 1, genreId: 2 });
 
     expect(prisma.game.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -119,7 +133,7 @@ describe("createGame", () => {
     vi.mocked(prisma.platform.findUnique).mockResolvedValue(null);
 
     await expect(
-      createGame({ title: "Hollow Knight", platformId: 999, genreId: 1 })
+      createGame(1, { title: "Hollow Knight", platformId: 999, genreId: 1 })
     ).rejects.toThrow("PLATFORM_NOT_FOUND");
 
     expect(prisma.genre.findUnique).not.toHaveBeenCalled();
@@ -134,7 +148,7 @@ describe("createGame", () => {
     vi.mocked(prisma.genre.findUnique).mockResolvedValue(null);
 
     await expect(
-      createGame({ title: "Hollow Knight", platformId: 1, genreId: 999 })
+      createGame(1, { title: "Hollow Knight", platformId: 1, genreId: 999 })
     ).rejects.toThrow("GENRE_NOT_FOUND");
 
     expect(prisma.game.create).not.toHaveBeenCalled();
@@ -151,7 +165,7 @@ describe("createGame", () => {
     });
     vi.mocked(prisma.game.create).mockResolvedValue(makeGame() as never);
 
-    const result = await createGame({
+    const result = await createGame(1, {
       title: "Hollow Knight",
       platformId: 1,
       genreId: 1,
@@ -165,6 +179,7 @@ describe("createGame", () => {
           title: "Hollow Knight",
           platformId: 1,
           genreId: 1,
+          userId: 1,
         }),
         include: { platform: true, genre: true },
       })
@@ -178,21 +193,21 @@ describe("getGameById", () => {
   });
 
   it("retorna o jogo quando existe", async () => {
-    vi.mocked(prisma.game.findUnique).mockResolvedValue(makeGame() as never);
+    vi.mocked(prisma.game.findFirst).mockResolvedValue(makeGame() as never);
 
-    const result = await getGameById(1);
+    const result = await getGameById(1, 1);
 
     expect(result?.id).toBe(1);
-    expect(prisma.game.findUnique).toHaveBeenCalledWith({
-      where: { id: 1 },
+    expect(prisma.game.findFirst).toHaveBeenCalledWith({
+      where: { id: 1, userId: 1 },
       include: { platform: true, genre: true },
     });
   });
 
-  it("retorna null quando não existe", async () => {
-    vi.mocked(prisma.game.findUnique).mockResolvedValue(null);
+  it("retorna null quando não existe (ou é de outro usuário)", async () => {
+    vi.mocked(prisma.game.findFirst).mockResolvedValue(null);
 
-    const result = await getGameById(999);
+    const result = await getGameById(1, 999);
 
     expect(result).toBeNull();
   });
@@ -201,12 +216,26 @@ describe("getGameById", () => {
 describe("updateGame", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Por padrão o jogo pertence ao usuário que está editando.
+    vi.mocked(prisma.game.findFirst).mockResolvedValue({ id: 1 } as never);
+  });
+
+  it("lança GAME_NOT_FOUND quando o jogo é de outro usuário", async () => {
+    vi.mocked(prisma.game.findFirst).mockResolvedValue(null);
+
+    await expect(updateGame(2, 1, { title: "Hack" })).rejects.toThrow("GAME_NOT_FOUND");
+
+    expect(prisma.game.findFirst).toHaveBeenCalledWith({
+      where: { id: 1, userId: 2 },
+      select: { id: true },
+    });
+    expect(prisma.game.update).not.toHaveBeenCalled();
   });
 
   it("não valida plataforma quando não foi enviada", async () => {
     vi.mocked(prisma.game.update).mockResolvedValue(makeGame() as never);
 
-    await updateGame(1, { title: "Novo título" });
+    await updateGame(1, 1, { title: "Novo título" });
 
     expect(prisma.platform.findUnique).not.toHaveBeenCalled();
     expect(prisma.genre.findUnique).not.toHaveBeenCalled();
@@ -220,7 +249,7 @@ describe("updateGame", () => {
     });
     vi.mocked(prisma.game.update).mockResolvedValue(makeGame() as never);
 
-    await updateGame(1, { platformId: 2 });
+    await updateGame(1, 1, { platformId: 2 });
 
     expect(prisma.platform.findUnique).toHaveBeenCalledWith({
       where: { id: 2 },
@@ -231,7 +260,7 @@ describe("updateGame", () => {
     vi.mocked(prisma.platform.findUnique).mockResolvedValue(null);
 
     await expect(
-      updateGame(1, { platformId: 999 })
+      updateGame(1, 1, { platformId: 999 })
     ).rejects.toThrow("PLATFORM_NOT_FOUND");
 
     expect(prisma.game.update).not.toHaveBeenCalled();
@@ -245,7 +274,7 @@ describe("updateGame", () => {
     vi.mocked(prisma.genre.findUnique).mockResolvedValue(null);
 
     await expect(
-      updateGame(1, { platformId: 1, genreId: 999 })
+      updateGame(1, 1, { platformId: 1, genreId: 999 })
     ).rejects.toThrow("GENRE_NOT_FOUND");
 
     expect(prisma.game.update).not.toHaveBeenCalled();
@@ -257,12 +286,18 @@ describe("deleteGame", () => {
     vi.clearAllMocks();
   });
 
-  it("chama prisma.game.delete com o id correto", async () => {
-    vi.mocked(prisma.game.delete).mockResolvedValue(makeGame() as never);
+  it("apaga apenas o jogo do usuário informado", async () => {
+    vi.mocked(prisma.game.deleteMany).mockResolvedValue({ count: 1 });
 
-    await deleteGame(1);
+    await deleteGame(1, 5);
 
-    expect(prisma.game.delete).toHaveBeenCalledOnce();
-    expect(prisma.game.delete).toHaveBeenCalledWith({ where: { id: 1 } });
+    expect(prisma.game.deleteMany).toHaveBeenCalledOnce();
+    expect(prisma.game.deleteMany).toHaveBeenCalledWith({ where: { id: 5, userId: 1 } });
+  });
+
+  it("lança GAME_NOT_FOUND quando o jogo não existe ou é de outro usuário", async () => {
+    vi.mocked(prisma.game.deleteMany).mockResolvedValue({ count: 0 });
+
+    await expect(deleteGame(2, 5)).rejects.toThrow("GAME_NOT_FOUND");
   });
 });

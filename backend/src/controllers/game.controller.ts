@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { Prisma } from "@prisma/client";
 import { getAllGames, createGame, getGameById, updateGame, deleteGame } from "../services/game.service";
+import type { AuthedRequest } from "../middlewares/auth";
 import { createGameSchema, gameQuerySchema, updateGameSchema } from "../schemas/game.schema";
 
 export async function getGames(req: Request, res: Response) {
@@ -14,7 +15,7 @@ export async function getGames(req: Request, res: Response) {
   }
 
   try {
-    const games = await getAllGames(parsed.data);
+    const games = await getAllGames((req as AuthedRequest).userId, parsed.data);
     res.json(games);
   } catch (error) {
     console.error(error);
@@ -35,7 +36,7 @@ export async function createGameController(req: Request, res: Response) {
       });
     }
 
-    const game = await createGame(result.data);
+    const game = await createGame((req as AuthedRequest).userId, result.data);
 
     return res.status(201).json(game);
 
@@ -83,7 +84,7 @@ export async function getGameByIdController(
       });
     }
 
-    const game = await getGameById(id);
+    const game = await getGameById((req as AuthedRequest).userId, id);
 
     if (!game) {
       return res.status(404).json({
@@ -120,13 +121,19 @@ export async function updateGameController(req: Request, res: Response) {
       });
     }
 
-    const game = await updateGame(id, result.data);
+    const game = await updateGame((req as AuthedRequest).userId, id, result.data);
 
     return res.json(game);
   } catch (error) {
     console.error(error);
 
     if (error instanceof Error) {
+      if (error.message === "GAME_NOT_FOUND") {
+        return res.status(404).json({
+          message: "Jogo não encontrado.",
+        });
+      }
+
       if (error.message === "PLATFORM_NOT_FOUND") {
         return res.status(404).json({
           message: "Plataforma não encontrada.",
@@ -164,13 +171,19 @@ export async function deleteGameController(req: Request, res: Response) {
       });
     }
 
-    await deleteGame(id);
+    await deleteGame((req as AuthedRequest).userId, id);
 
     return res.status(204).send();
   } catch (error) {
     console.error(error);
 
     if (error instanceof Error) {
+      if (error.message === "GAME_NOT_FOUND") {
+        return res.status(404).json({
+          message: "Jogo não encontrado.",
+        });
+      }
+
       if (error.message === "PLATFORM_NOT_FOUND") {
         return res.status(404).json({
           message: "Plataforma não encontrada.",
