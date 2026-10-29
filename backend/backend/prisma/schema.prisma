@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum GameStatus {
+  WISHLIST
+  PLAYING
+  COMPLETED
+  PAUSED
+  DROPPED
+}
+
+model Game {
+  id          Int        @id @default(autoincrement())
+  title       String
+  description String?
+  coverUrl    String?
+  backgroundUrl String?
+  releaseDate DateTime?
+  status      GameStatus @default(WISHLIST)
+  rating      Float?
+  hoursPlayed Float?
+
+  platformId  Int
+  genreId     Int
+
+  platform    Platform   @relation(fields: [platformId], references: [id])
+  genre       Genre      @relation(fields: [genreId], references: [id])
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  nickname     String   @unique
+  email        String   @unique
+  passwordHash String
+  avatarUrl    String?
+  bannerUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  passwordResetTokens PasswordResetToken[]
+}
+
+/// Link de "Esqueci minha senha". Guarda só o hash (SHA-256) do token enviado por e-mail.
+model PasswordResetToken {
+  id        Int       @id @default(autoincrement())
+  tokenHash String    @unique
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model Platform {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+
+  games Game[]
+}
+
+model Genre {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+
+  games Game[]
+}

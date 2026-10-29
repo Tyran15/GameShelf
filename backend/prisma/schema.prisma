@@ -27,12 +27,16 @@ model Game {
 
   platformId  Int
   genreId     Int
+  userId      Int
 
   platform    Platform   @relation(fields: [platformId], references: [id])
   genre       Genre      @relation(fields: [genreId], references: [id])
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+
+  @@index([userId])
 }
 
 model User {
@@ -44,6 +48,22 @@ model User {
   bannerUrl    String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  passwordResetTokens PasswordResetToken[]
+  games               Game[]
+}
+
+/// Link de "Esqueci minha senha". Guarda só o hash (SHA-256) do token enviado por e-mail.
+model PasswordResetToken {
+  id        Int       @id @default(autoincrement())
+  tokenHash String    @unique
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 model Platform {

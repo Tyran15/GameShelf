@@ -11,9 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CadastroRouteImport } from './routes/cadastro'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as GenresRouteImport } from './routes/genres'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PlatformsRouteImport } from './routes/platforms'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StatsRouteImport } from './routes/stats'
 import { Route as GamesNewRouteImport } from './routes/games.new'
@@ -30,6 +33,11 @@ const CadastroRoute = CadastroRouteImport.update({
   path: '/cadastro',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GenresRoute = GenresRouteImport.update({
   id: '/genres',
   path: '/genres',
@@ -43,6 +51,16 @@ const LoginRoute = LoginRouteImport.update({
 const PlatformsRoute = PlatformsRouteImport.update({
   id: '/platforms',
   path: '/platforms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -74,9 +92,12 @@ const GamesIdEditRoute = GamesIdEditRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cadastro': typeof CadastroRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/genres': typeof GenresRoute
   '/login': typeof LoginRoute
   '/platforms': typeof PlatformsRoute
+  '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
   '/stats': typeof StatsRoute
   '/games/new': typeof GamesNewRoute
@@ -86,9 +107,12 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cadastro': typeof CadastroRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/genres': typeof GenresRoute
   '/login': typeof LoginRoute
   '/platforms': typeof PlatformsRoute
+  '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
   '/stats': typeof StatsRoute
   '/games/new': typeof GamesNewRoute
@@ -99,9 +123,12 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/cadastro': typeof CadastroRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/genres': typeof GenresRoute
   '/login': typeof LoginRoute
   '/platforms': typeof PlatformsRoute
+  '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
   '/stats': typeof StatsRoute
   '/games/new': typeof GamesNewRoute
@@ -113,9 +140,12 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/cadastro'
+    | '/forgot-password'
     | '/genres'
     | '/login'
     | '/platforms'
+    | '/profile'
+    | '/reset-password'
     | '/settings'
     | '/stats'
     | '/games/new'
@@ -125,9 +155,12 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/cadastro'
+    | '/forgot-password'
     | '/genres'
     | '/login'
     | '/platforms'
+    | '/profile'
+    | '/reset-password'
     | '/settings'
     | '/stats'
     | '/games/new'
@@ -137,9 +170,12 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/cadastro'
+    | '/forgot-password'
     | '/genres'
     | '/login'
     | '/platforms'
+    | '/profile'
+    | '/reset-password'
     | '/settings'
     | '/stats'
     | '/games/new'
@@ -150,9 +186,12 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CadastroRoute: typeof CadastroRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   GenresRoute: typeof GenresRoute
   LoginRoute: typeof LoginRoute
   PlatformsRoute: typeof PlatformsRoute
+  ProfileRoute: typeof ProfileRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SettingsRoute: typeof SettingsRoute
   StatsRoute: typeof StatsRoute
   GamesNewRoute: typeof GamesNewRoute
@@ -176,6 +215,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CadastroRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/genres': {
       id: '/genres'
       path: '/genres'
@@ -195,6 +241,20 @@ declare module '@tanstack/react-router' {
       path: '/platforms'
       fullPath: '/platforms'
       preLoaderRoute: typeof PlatformsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -238,9 +298,12 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CadastroRoute: CadastroRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   GenresRoute: GenresRoute,
   LoginRoute: LoginRoute,
   PlatformsRoute: PlatformsRoute,
+  ProfileRoute: ProfileRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SettingsRoute: SettingsRoute,
   StatsRoute: StatsRoute,
   GamesNewRoute: GamesNewRoute,

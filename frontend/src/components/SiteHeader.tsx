@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
-import { ArrowLeft, ChevronDown, LogOut, Menu, Plus, User } from "lucide-react";
+import { ArrowLeft, ChevronDown, LogOut, Menu, Pencil, Plus, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +14,7 @@ import {
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Logo } from "./Logo";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { EditProfileDialog } from "@/components/EditProfileDialog";
 import { useLogout, useSession } from "@/hooks/useSession";
 import { assetUrl, type AuthUser } from "@/services/auth";
 
@@ -53,7 +54,7 @@ function UserAvatar({ user, className = "size-8" }: { user: AuthUser; className?
 }
 
 /** Menu do usuário no desktop: avatar + nickname abrem um menu com "Sair". */
-function DesktopUserMenu() {
+function DesktopUserMenu({ onEditProfile }: { onEditProfile: () => void }) {
   const session = useSession();
   const logout = useLogout();
 
@@ -78,6 +79,16 @@ function DesktopUserMenu() {
           <p className="truncate text-xs text-muted-foreground">{user.email}</p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link to="/profile">
+            <User className="size-4" aria-hidden="true" />
+            Meu perfil
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={onEditProfile}>
+          <Pencil className="size-4" aria-hidden="true" />
+          Editar perfil
+        </DropdownMenuItem>
         <DropdownMenuItem disabled={logout.isPending} onSelect={() => logout.mutate()}>
           <LogOut className="size-4" aria-hidden="true" />
           Sair
@@ -88,7 +99,13 @@ function DesktopUserMenu() {
 }
 
 /** Rodapé do menu lateral no mobile: quem está logado + botão "Sair". */
-function MobileUserFooter() {
+function MobileUserFooter({
+  onEditProfile,
+  onNavigate,
+}: {
+  onEditProfile: () => void;
+  onNavigate: () => void;
+}) {
   const session = useSession();
   const logout = useLogout();
 
@@ -104,6 +121,16 @@ function MobileUserFooter() {
           <p className="truncate text-xs text-muted-foreground">{user.email}</p>
         </div>
       </div>
+      <Button asChild variant="outline" className="w-full gap-2">
+        <Link to="/profile" onClick={onNavigate}>
+          <User className="size-4" aria-hidden="true" />
+          Meu perfil
+        </Link>
+      </Button>
+      <Button variant="outline" className="w-full gap-2" onClick={onEditProfile}>
+        <Pencil className="size-4" aria-hidden="true" />
+        Editar perfil
+      </Button>
       <Button
         variant="outline"
         className="w-full gap-2"
@@ -121,6 +148,8 @@ export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = useLocation({ select: (loc) => loc.pathname });
   const backTarget = resolveBackTarget(pathname);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const user = useSession().data;
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background">
@@ -172,7 +201,7 @@ export function SiteHeader() {
                 <span>Novo jogo</span>
               </Link>
             </Button>
-            <DesktopUserMenu />
+            <DesktopUserMenu onEditProfile={() => setProfileOpen(true)} />
           </div>
         </nav>
 
@@ -215,11 +244,19 @@ export function SiteHeader() {
                 ))}
               </nav>
 
-              <MobileUserFooter />
+              <MobileUserFooter
+                onNavigate={() => setMenuOpen(false)}
+                onEditProfile={() => {
+                  setMenuOpen(false);
+                  setProfileOpen(true);
+                }}
+              />
             </SheetContent>
           </Sheet>
         </div>
       </div>
+
+      {user && <EditProfileDialog user={user} open={profileOpen} onOpenChange={setProfileOpen} />}
     </header>
   );
 }

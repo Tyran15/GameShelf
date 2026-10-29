@@ -57,3 +57,15 @@ export async function removeUploadedFiles(files: Array<Express.Multer.File | und
       .map((file) => fs.promises.unlink(file.path).catch(() => undefined)),
   );
 }
+
+/**
+ * Apaga uma imagem salva a partir da URL pública ("/uploads/avatars/<arquivo>").
+ * Só mexe em /uploads/avatars e /uploads/banners e usa apenas o nome do arquivo,
+ * então um valor estranho no banco nunca aponta para fora da pasta de uploads.
+ */
+export async function removeUploadedByUrl(url: string | null | undefined) {
+  if (!url) return;
+  const match = /^\/uploads\/(avatars|banners)\/([^/\\]+)$/.exec(url);
+  if (!match) return;
+  await fs.promises.unlink(path.join(UPLOAD_ROOT, match[1]!, match[2]!)).catch(() => undefined);
+}

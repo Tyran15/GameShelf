@@ -21,11 +21,12 @@ export interface CreateGameInput {
   genreId: number;
 }
 
-export async function getAllGames(filters: GameFilters = {}) {
+export async function getAllGames(userId: number, filters: GameFilters = {}) {
   const { status, platformId, genreId, search } = filters;
 
   return prisma.game.findMany({
     where: {
+      userId,
       status,
       platformId,
       genreId,
@@ -38,12 +39,12 @@ export async function getAllGames(filters: GameFilters = {}) {
       genre: true,
     },
     orderBy: {
-      updatedAt: "desc",   // 👈 única mudança real
+      updatedAt: "desc",
     },
   });
 }
 
-export async function createGame(data: CreateGameInput) {
+export async function createGame(userId: number, data: CreateGameInput) {
   const platform = await prisma.platform.findUnique({
     where: {
       id: data.platformId,
@@ -65,7 +66,7 @@ export async function createGame(data: CreateGameInput) {
   }
 
   return prisma.game.create({
-    data,
+    data: { ...data, userId },
     include: {
       platform: true,
       genre: true,
@@ -73,8 +74,12 @@ export async function createGame(data: CreateGameInput) {
   });
 }
 
-export async function getGameById(id: number) {
-  return prisma.game.findUnique({ where: { id }, include: { platform: true, genre: true } });
+export async function getGameById(userId: number, id: number) {
+  // Filtra pelo dono: o jogo de outro usuário se comporta como "não encontrado".
+  return prisma.game.findFirst({
+    where: { id, userId },
+    include: { platform: true, genre: true },
+  });
 }
 
 export interface UpdateGameInput {
@@ -90,7 +95,13 @@ export interface UpdateGameInput {
   genreId?: number;
 }
 
-export async function updateGame(id: number, data: UpdateGameInput) {
+export async function updateGame(userId: number, id: number, data: UpdateGameInput) {
+  const owned = await prisma.game.findFirst({ where: { id, userId }, select: { id: true } });
+
+  if (!owned) {
+    throw new Error("GAME_NOT_FOUND");
+  }
+
   const platform = data.platformId
     ? await prisma.platform.findUnique({
       where: { id: data.platformId },
@@ -121,10 +132,10 @@ export async function updateGame(id: number, data: UpdateGameInput) {
   });
 }
 
-export async function deleteGame(id: number) {
-  return prisma.game.delete({
-    where: {
-      id,
-    },
-  });
+export async function deleteGame(userId: number, id: number) {
+  const { count } = await prisma.game.deleteMany({ where: { id, userId } });
+
+  if (count === 0) {
+    throw new Error("GAME_NOT_FOUND");
+  }
 }

@@ -94,3 +94,52 @@ export async function logoutUser(): Promise<void> {
   const res = await apiFetch("/api/auth/logout", { method: "POST" });
   if (!res.ok) throw await toApiError(res, "Não foi possível sair.");
 }
+
+export type UpdateProfilePayload = {
+  nickname: string;
+  avatar: File | null;
+  banner: File | null;
+  removeAvatar: boolean;
+  removeBanner: boolean;
+};
+
+/**
+ * Atualiza apelido, foto e banner. Contrato esperado da API (pendência 9, ainda a criar):
+ * PUT /api/auth/profile (multipart) -> 200 { user }.
+ */
+export async function updateProfile(payload: UpdateProfilePayload): Promise<AuthUser> {
+  const body = new FormData();
+  body.append("nickname", payload.nickname);
+  if (payload.avatar) body.append("avatar", payload.avatar);
+  if (payload.banner) body.append("banner", payload.banner);
+  if (payload.removeAvatar) body.append("removeAvatar", "true");
+  if (payload.removeBanner) body.append("removeBanner", "true");
+
+  const res = await apiFetch("/api/auth/profile", { method: "PUT", body });
+  if (!res.ok) throw await toApiError(res, "Não foi possível salvar o perfil.");
+  const data = (await res.json()) as { user: AuthUser };
+  return data.user;
+}
+
+/**
+ * Recuperação de senha. Contrato esperado da API (ainda a criar):
+ * POST /api/auth/forgot-password { email }          -> 200 (sempre, exista o e-mail ou não)
+ * POST /api/auth/reset-password  { token, password } -> 200 | 400 { message, errors? }
+ */
+export async function forgotPassword(email: string): Promise<void> {
+  const res = await apiFetch("/api/auth/forgot-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  if (!res.ok) throw await toApiError(res, "Não foi possível enviar o link.");
+}
+
+export async function resetPassword(token: string, password: string): Promise<void> {
+  const res = await apiFetch("/api/auth/reset-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, password }),
+  });
+  if (!res.ok) throw await toApiError(res, "Não foi possível alterar a senha.");
+}
